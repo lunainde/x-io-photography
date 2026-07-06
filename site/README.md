@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# X-iO — Photography Portfolio
 
-## Getting Started
+Next.js implementation of the X-iO design (see `../chats/` and `../project/` at
+the repo root for the original Claude Design handoff this was built from).
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router) — one real route per filter (`/`, `/architecture`,
+  `/black-white`, `/color`, `/food`, `/places`, `/berlin`), Anton + Source Code
+  Pro via `next/font`.
+- **Framer Motion** — fade transition between routes.
+- **Sanity** — headless CMS for images/videos, with an embedded Studio at
+  `/studio`. Until it's configured, every page falls back to the original
+  striped placeholder tiles instead of failing.
+
+## Local development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Setting up content (Sanity)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The site works out of the box with placeholder tiles. To manage real photos
+and videos:
 
-## Learn More
+1. Create a free project at [sanity.io](https://www.sanity.io/manage) (or run
+   `npx sanity@latest init` from this directory and choose "create new
+   project").
+2. Note the **Project ID** and **dataset name** (usually `production`) it
+   gives you.
+3. Create `.env.local` in this directory:
 
-To learn more about Next.js, take a look at the following resources:
+   ```bash
+   NEXT_PUBLIC_SANITY_PROJECT_ID=your-project-id
+   NEXT_PUBLIC_SANITY_DATASET=production
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. Restart `npm run dev`, then open http://localhost:3000/studio and sign in
+   with the same account. You'll see one document type, **Media item**, with
+   fields for category (home / architecture / black & white / color / food /
+   places / berlin), image or video upload, alt text, and a sort order.
+5. Add a few items to the **home** category — that's the curated set that
+   drives the animated hero. Add items to the other categories to fill out
+   each gallery page.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Deploy the Studio itself (so editors don't need a local dev server) with:
 
-## Deploy on Vercel
+```bash
+npx sanity deploy
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+or just use the `/studio` route on your deployed Vercel site — it works the
+same way once the env vars above are set there too.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Adding a new page/category later
+
+Add the slug to `src/lib/categories.ts` (label, route, hover color), add the
+option to the `category` field in `src/sanity/schemaTypes/mediaItem.ts`, and
+create `src/app/<slug>/page.tsx` following the existing category pages as a
+template.
+
+## Deploying
+
+1. Push this repo to GitHub (or GitLab/Bitbucket).
+2. Import it on [vercel.com/new](https://vercel.com/new), with **Root
+   Directory** set to `site/` (since this app lives in a subdirectory).
+3. Add the two `NEXT_PUBLIC_SANITY_*` environment variables from above in the
+   Vercel project settings.
+4. Deploy, then attach your domain under Project → Settings → Domains.
