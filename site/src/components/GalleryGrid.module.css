@@ -1,7 +1,22 @@
+/* Mobile first — 1 column */
 .grid {
-  columns: 3;
-  column-gap: 80px;
+  columns: 1;
+  column-gap: 15px;
   width: 100%;
+}
+
+/* Tablet — 2 columns */
+@media (min-width: 640px) {
+  .grid {
+    columns: 2;
+  }
+}
+
+/* Desktop — 3 columns */
+@media (min-width: 1024px) {
+  .grid {
+    columns: 3;
+  }
 }
 
 .tile {

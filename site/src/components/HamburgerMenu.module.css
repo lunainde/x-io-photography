@@ -89,3 +89,36 @@
 .menuItem:hover {
   color: rgba(1, 1, 1, 0.7);
 }
+
+/* Mobile: the 50%-margin desktop layout pushes text past the viewport edge
+   and .overlay's overflow:hidden then clips it. Left-align instead. */
+@media (max-width: 640px) {
+  .overlay {
+    align-items: flex-start;
+  }
+
+  .sideLink,
+  .listWrap {
+    margin-left: 0;
+    width: 100%;
+    padding-left: 32px;
+    text-align: left;
+  }
+
+  .listWrap {
+    align-items: flex-start;
+  }
+
+  .menuItem {
+    text-align: left;
+  }
+}
+
+/* Desktop: enlarge the hamburger/close tap target and icon. */
+@media (min-width: 1025px) {
+  .button {
+    width: 72px;
+    height: 72px;
+    padding: 12px;
+  }
+}
