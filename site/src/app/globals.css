@@ -1,26 +1,55 @@
-@import "tailwindcss";
+* {
+  box-sizing: border-box;
+}
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-bg: #e0e4e7;
+  --color-fg: #010101;
+  --color-accent: #ff2801;
+  --color-accent-dark: #a11d00;
+  --color-surface: #fafafa;
+  --font-display: var(--font-anton), sans-serif;
+  --font-body: var(--font-source-code-pro), monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* Custom cursor only replaces the system cursor on devices that actually
+   have a precise pointer; touch devices keep native tap behavior. */
+@media (hover: hover) and (pointer: fine) {
+  html.custom-cursor,
+  html.custom-cursor * {
+    cursor: none !important;
+  }
+}
+
+.tiled-bg-loop {
+  animation: bgLoop 90s linear infinite;
+}
+
+@keyframes bgLoop {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(1080px, -1080px);
+  }
 }

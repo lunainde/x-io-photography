@@ -1,0 +1,91 @@
+.button {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 220;
+  width: 64px;
+  height: 64px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeLine {
+  position: absolute;
+  width: 26px;
+  height: 3px;
+  background: #010101;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  transition: background 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.sideLink {
+  flex: 0 0 auto;
+  margin-left: 50%;
+  width: fit-content;
+  font-family: var(--font-body);
+  color: #010101;
+  text-decoration: none;
+  cursor: default;
+  transition: color 0.2s ease;
+}
+
+.sideLink:hover {
+  color: #ff2801;
+}
+
+.instagramLink {
+  font-size: 16px;
+  letter-spacing: 0.02em;
+}
+
+.logoLink {
+  font-weight: 900;
+  font-size: 90px;
+  line-height: 1;
+  letter-spacing: -3px;
+}
+
+.listWrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-left: 50%;
+  width: fit-content;
+  gap: 4px;
+}
+
+.menuItem {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: clamp(20px, 4.2vh, 40px);
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  color: #010101;
+  text-transform: lowercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.25s ease;
+  width: fit-content;
+}
+
+.menuItem:hover {
+  color: rgba(1, 1, 1, 0.7);
+}

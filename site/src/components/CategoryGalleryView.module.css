@@ -1,0 +1,20 @@
+.view {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  flex: 1;
+  padding: 110px 40px 60px 40px;
+}
+
+.label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-fg);
+  margin-bottom: 24px;
+}

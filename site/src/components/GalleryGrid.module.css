@@ -1,0 +1,19 @@
+.grid {
+  columns: 3;
+  column-gap: 80px;
+  width: 100%;
+}
+
+.tile {
+  width: 100%;
+  break-inside: avoid;
+  margin-bottom: 80px;
+  border: 1px solid var(--color-accent);
+  box-sizing: border-box;
+}
+
+.media {
+  width: 100%;
+  height: auto;
+  display: block;
+}
