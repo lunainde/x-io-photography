@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #E0E4E7; }
+    @keyframes bgLoop {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(1080px, -1080px); }
+    }
+  </style>
+</helmet>
+
+<div style="background:#E0E4E7; min-height:100vh; width:100%; position:relative; font-family:'Source Code Pro', monospace; overflow:hidden; cursor:none;">
+
+  <div ref="{{ dotRef }}" style="position:fixed; top:0; left:0; width:8px; height:8px; border-radius:0px; background:#010101; pointer-events:none; z-index:9999; transform:translate(-100px,-100px);"></div>
+  <div ref="{{ ringRef }}" style="position:fixed; top:0; left:0; width:32px; height:32px; margin-left:-12px; margin-top:-12px; border:1px solid #FF2801; border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-100px,-100px);"></div>
+
+  <button onClick="{{ toggleMenu }}" style="{{ hamburgerButtonStyle }}" aria-label="Menu">
+    <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="{{ hamburgerLineStyle1 }}"></div>
+      <div style="{{ hamburgerLineStyle3 }}"></div>
+    </sc-if>
+    <sc-if value="{{ menuClosed }}" hint-placeholder-val="{{ true }}">
+      <img src="assets/menu-icon.png" alt="Menu" style="{{ menuIconStyle }}" />
+    </sc-if>
+  </button>
+
+  <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="{{ overlayStyle }}">
+      <a href="https://www.instagram.com/x.io.digital/" target="_blank" rel="noopener noreferrer" style="{{ instagramLinkStyle }}" style-hover="color:#ff2801;">instagram</a>
+
+      <div style="{{ menuListWrapStyle }}">
+        <sc-for list="{{ filters }}" as="f" hint-placeholder-count="7">
+          <div onClick="{{ f.onClick }}" onMouseEnter="{{ f.onEnter }}" onMouseLeave="{{ f.onLeave }}" style="{{ f.style }}" style-hover="color:rgba(1,1,1,0.7);">{{ f.label }}</div>
+        </sc-for>
+      </div>
+
+      <a href="https://www.x-io.digital/" target="_blank" rel="noopener noreferrer" style="{{ overlayLogoStyle }}" style-hover="color:#ff2801;">X-iO</a>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isHero }}" hint-placeholder-val="{{ true }}">
+    <div style="{{ viewWrapperStyle }}">
+      <div style="position:fixed; inset:0; overflow:hidden; z-index:0; background:#E0E4E7;">
+        <div ref="{{ bgRef }}" style="position:absolute; inset:0;">
+          <div style="{{ bgCenterStyle }}">
+            <div style="{{ bgLoopStyle }}">
+              <div style="{{ bgSuperStyle }}">
+                <sc-for list="{{ bgQuadrants }}" as="quad" hint-placeholder-count="4">
+                  <div style="{{ bgUnitStyle }}">
+                    <sc-for list="{{ quad }}" as="tile" hint-placeholder-count="16">
+                      <div style="{{ tile.wrapStyle }}">
+                        <div style="{{ tile.style }}" style-hover="{{ tile.hoverStyle }}">
+                          <div style="position:absolute; bottom:6px; left:6px; font-size:9px; color:#FAFAFA; letter-spacing:0.05em; text-transform:uppercase; opacity:0.7;">{{ tile.tag }}</div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="position:fixed; left:24px; bottom:24px; z-index:50; pointer-events:none;">
+        <div style="font-family:'Anton', sans-serif; font-size:280px; color:#FF2801; letter-spacing:-6px; line-height:0.85; white-space:nowrap;">X-iO</div>
+      </div>
+
+      <div style="position:relative; z-index:1; height:220vh; pointer-events:none;"></div>
+
+      <footer style="position:relative; z-index:10; background:#010101; color:#FAFAFA; font-family:'Source Code Pro', monospace; font-size:11px; text-align:center; padding:16px 0; letter-spacing:0.02em;">
+        built with ♥️ ☕️ &amp; 🤖 by <a href="https://www.x-io.digital/" target="_blank" rel="noopener noreferrer" style="color:#FF2801; text-decoration:none;" style-hover="color:#a11d00;">x-io.digital</a>
+      </footer>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isGallery }}" hint-placeholder-val="{{ false }}">
+    <div style="{{ viewWrapperStyleGallery }}">
+      <div style="flex:1; padding:110px 40px 60px 40px;">
+        <div style="font-family:'Source Code Pro', monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:#010101; margin-bottom:24px;">{{ galleryLabel }}</div>
+        <div style="columns:3; column-gap:80px; width:100%;">
+          <sc-for list="{{ galleryItems }}" as="item" hint-placeholder-count="9">
+            <div style="{{ item.wrapStyle }}">
+              <div style="{{ item.style }}"></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <footer style="background:#010101; color:#FAFAFA; font-family:'Source Code Pro', monospace; font-size:11px; text-align:center; padding:16px 0; letter-spacing:0.02em;">
+        built with ♥️ ☕️ &amp; 🤖 by <a href="https://www.x-io.digital/" target="_blank" rel="noopener noreferrer" style="color:#FF2801; text-decoration:none;" style-hover="color:#a11d00;">x-io.digital</a>
+      </footer>
+    </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;transitionStyle&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;fade&quot;, &quot;options&quot;: [&quot;fade&quot;, &quot;slide&quot;, &quot;scatter&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;View transition&quot;}}">
+const BORDER_COLORS = ['#e21715', '#086392', '#f2572c', '#5bc52c', '#b3813c'];
+const PILLS = ['home', 'architecture', 'black & white', 'color', 'food', 'places', 'berlin'];
+
+function stripe(seed) {
+  // subtle diagonal stripe placeholder texture
+  const c1 = '#c9c9c9';
+  const c2 = '#b8b8b8';
+  return `repeating-linear-gradient(135deg, ${c1} 0px, ${c1} 8px, ${c2} 8px, ${c2} 16px)`;
+}
+
+const COPY = 1080; // px, side length of one tileable unit (guaranteed fully filled via CSS grid)
+// NOTE: keep in sync with the 1080px used in the @keyframes bgLoop translate values above.
+const GRID_N = 5; // tiles per side — big enough that the background always outsizes the viewport,
+// even after the seamless loop shifts it by one COPY period, so no raw canvas is ever exposed.
+const SUPER = COPY * GRID_N;
+
+// 4x4 grid template areas: a mix of big/landscape/portrait/square cells that
+// tile the unit with zero gaps (every one of the 16 cells is claimed exactly once).
+const AREA_TEMPLATE = '"A A B C" "A A B D" "E F F D" "G G H D"';
+const AREA_DEFS = [
+  { area: 'A', tag: 'square' },
+  { area: 'B', tag: 'portrait' },
+  { area: 'C', tag: 'square' },
+  { area: 'D', tag: 'portrait' },
+  { area: 'E', tag: 'square' },
+  { area: 'F', tag: 'landscape' },
+  { area: 'G', tag: 'landscape' },
+  { area: 'H', tag: 'square' },
+];
+
+function makeBgUnitTiles(prefix) {
+  return AREA_DEFS.map((def, i) => ({
+    tag: `${prefix}-${def.area} / ${def.tag}`,
+    wrapStyle: {
+      position: 'relative',
+      gridArea: def.area,
+      border: '1px solid #FF2801',
+      boxSizing: 'border-box',
+      overflow: 'hidden',
+    },
+    style: {
+      position: 'absolute',
+      inset: 0,
+      background: stripe(i),
+      filter: 'grayscale(1)',
+      transition: 'filter 0.3s ease',
+    },
+    hoverStyle: { filter: 'grayscale(0.25) sepia(0.25) saturate(1.1)' },
+  }));
+}
+
+function makeGalleryItems(label) {
+  const heights = [260, 340, 220, 300, 260, 380, 240, 300, 260];
+  return heights.map((h, i) => ({
+    wrapStyle: {
+      width: '100%',
+      breakInside: 'avoid',
+      marginBottom: '80px',
+      border: '1px solid #FF2801',
+      boxSizing: 'border-box',
+    },
+    style: {
+      width: '100%',
+      height: h + 'px',
+      background: stripe(i),
+    },
+  }));
+}
+
+class Component extends DCLogic {
+  state = { activeFilter: 'home', transitioning: false, menuOpen: false, hoveredLabel: null };
+  dotRef = React.createRef();
+  ringRef = React.createRef();
+  bgRef = React.createRef();
+  mouse = { x: -100, y: -100 };
+  ring = { x: -100, y: -100 };
+
+  componentDidMount() {
+    this.onMouseMove = (e) => {
+      this.mouse.x = e.clientX;
+      this.mouse.y = e.clientY;
+      if (this.dotRef.current) {
+        this.dotRef.current.style.transform = `translate(${e.clientX - 4}px, ${e.clientY - 4}px)`;
+      }
+    };
+    window.addEventListener('mousemove', this.onMouseMove);
+    const tick = () => {
+      this.ring.x += (this.mouse.x - this.ring.x) * 0.15;
+      this.ring.y += (this.mouse.y - this.ring.y) * 0.15;
+      if (this.ringRef.current) {
+        this.ringRef.current.style.transform = `translate(${this.ring.x}px, ${this.ring.y}px)`;
+      }
+      this.rafId = requestAnimationFrame(tick);
+    };
+    this.rafId = requestAnimationFrame(tick);
+
+    this.onScroll = () => {
+      if (this.scrollScheduled) return;
+      this.scrollScheduled = true;
+      requestAnimationFrame(() => {
+        this.scrollScheduled = false;
+        const y = window.scrollY || window.pageYOffset;
+        if (this.bgRef.current) {
+          // Wrap the scroll-linked offset to one tile period so it can never
+          // drift past the edge of the (finite) 2x2 tiled background and
+          // expose raw canvas — this is what caused the visible gap.
+          const raw = y * 0.18;
+          const wrapped = ((raw % COPY) + COPY) % COPY;
+          const dx = wrapped;
+          const dy = -wrapped;
+          this.bgRef.current.style.transform = `translate(${dx}px, ${dy}px)`;
+        }
+      });
+    };
+    window.addEventListener('scroll', this.onScroll, { passive: true });
+    this.onScroll();
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('mousemove', this.onMouseMove);
+    window.removeEventListener('scroll', this.onScroll);
+    cancelAnimationFrame(this.rafId);
+  }
+
+  setFilter(label) {
+    this.setState({ menuOpen: false, hoveredLabel: null });
+    if (label === this.state.activeFilter || this.state.transitioning) return;
+    this.setState({ transitioning: true });
+    setTimeout(() => {
+      this.setState({ activeFilter: label });
+    }, 380);
+    setTimeout(() => {
+      this.setState({ transitioning: false });
+    }, 440);
+  }
+
+  toggleMenu() {
+    this.setState((s) => ({ menuOpen: !s.menuOpen, hoveredLabel: null }));
+  }
+
+  renderVals() {
+    const active = this.state.activeFilter;
+    const isHero = active === 'home';
+    const isGallery = !isHero;
+    const menuOpen = this.state.menuOpen;
+    const style = this.props.transitionStyle ?? 'fade';
+    const t = this.state.transitioning;
+
+    let exitVals = { opacity: 1, transform: 'none' };
+    if (t) {
+      if (style === 'fade') exitVals = { opacity: 0, transform: 'none' };
+      else if (style === 'slide') exitVals = { opacity: 0, transform: 'translateX(-48px)' };
+      else if (style === 'scatter') exitVals = { opacity: 0, transform: 'scale(0.9) rotate(-3deg)' };
+    }
+    const baseWrapper = { transition: 'opacity 380ms ease, transform 380ms ease', opacity: exitVals.opacity, transform: exitVals.transform };
+    const viewWrapperStyle = { position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', ...baseWrapper };
+    const viewWrapperStyleGallery = { width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', ...baseWrapper };
+
+    const filters = PILLS.map((label) => {
+      return {
+        label,
+        onClick: () => this.setFilter(label),
+        onEnter: () => this.setState({ hoveredLabel: label }),
+        onLeave: () => this.setState({ hoveredLabel: null }),
+        style: {
+          fontFamily: "'Source Code Pro', monospace",
+          fontWeight: 600,
+          fontSize: 'clamp(20px, 4.2vh, 40px)',
+          lineHeight: 1.3,
+          letterSpacing: '0.01em',
+          color: '#010101',
+          textTransform: 'lowercase',
+          cursor: 'pointer',
+          transition: 'color 0.25s ease',
+          width: 'fit-content',
+        },
+        hoverStyle: { color: 'rgba(1,1,1,0.7)' },
+      };
+    });
+
+    const hamburgerButtonStyle = {
+      position: 'fixed',
+      top: '16px',
+      right: '16px',
+      zIndex: 220,
+      width: '64px',
+      height: '64px',
+      background: 'none',
+      border: 'none',
+      padding: 0,
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    };
+    const menuClosed = !menuOpen;
+    const menuIconStyle = {
+      width: '100%',
+      height: '100%',
+      objectFit: 'contain',
+    };
+    const lineBase = {
+      position: 'absolute',
+      width: '26px',
+      height: '3px',
+      background: '#010101',
+      transition: 'transform 0.3s ease',
+    };
+    const hamburgerLineStyle1 = { ...lineBase, transform: 'rotate(45deg)' };
+    const hamburgerLineStyle3 = { ...lineBase, transform: 'rotate(-45deg)' };
+
+    const HOVER_BG = {
+      'home': '#E0E4E7',
+      'architecture': '#FFB399',
+      'black & white': '#BFDDF0',
+      'color': '#F7D87F',
+      'food': '#AAFFC7',
+      'places': '#C1EBE9',
+      'berlin': '#FFD0D0',
+    };
+    const overlayStyle = {
+      position: 'fixed',
+      inset: 0,
+      zIndex: 200,
+      background: HOVER_BG[this.state.hoveredLabel] || '#E0E4E7',
+      transition: 'background 0.4s ease',
+      display: 'flex',
+      flexDirection: 'column',
+      padding: '40px 0',
+      boxSizing: 'border-box',
+      overflow: 'hidden',
+    };
+    const instagramLinkStyle = {
+      flex: '0 0 auto',
+      marginLeft: '50%',
+      width: 'fit-content',
+      fontFamily: "'Source Code Pro', monospace",
+      fontSize: '16px',
+      color: '#010101',
+      textDecoration: 'none',
+      letterSpacing: '0.02em',
+      cursor: 'default',
+      transition: 'color 0.2s ease',
+    };
+    const menuListWrapStyle = {
+      flex: '1 1 auto',
+      minHeight: 0,
+      overflowY: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      marginLeft: '50%',
+      width: 'fit-content',
+      gap: '4px',
+    };
+    const overlayLogoStyle = {
+      flex: '0 0 auto',
+      marginLeft: '50%',
+      width: 'fit-content',
+      fontFamily: "'Source Code Pro', monospace",
+      fontWeight: 900,
+      fontSize: '90px',
+      lineHeight: 1,
+      letterSpacing: '-3px',
+      color: '#010101',
+      textDecoration: 'none',
+      cursor: 'default',
+      transition: 'color 0.2s ease',
+    };
+
+    const bgCenterStyle = {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      width: SUPER + 'px',
+      height: SUPER + 'px',
+      transform: 'translate(-50%, -50%)',
+    };
+    const bgLoopStyle = {
+      width: '100%',
+      height: '100%',
+      animation: 'bgLoop 90s linear infinite',
+    };
+    const bgSuperStyle = {
+      width: '100%',
+      height: '100%',
+      display: 'grid',
+      gridTemplateColumns: `repeat(${GRID_N}, 1fr)`,
+      gridTemplateRows: `repeat(${GRID_N}, 1fr)`,
+    };
+    const bgUnitStyle = {
+      width: '100%',
+      height: '100%',
+      display: 'grid',
+      gridTemplateColumns: 'repeat(4, 1fr)',
+      gridTemplateRows: 'repeat(4, 1fr)',
+      gridTemplateAreas: AREA_TEMPLATE,
+      gap: '80px',
+      padding: '40px',
+      boxSizing: 'border-box',
+    };
+
+    return {
+      isHero,
+      isGallery,
+      menuOpen,
+      menuClosed,
+      hamburgerButtonStyle,
+      menuIconStyle,
+      hamburgerLineStyle1,
+      hamburgerLineStyle3,
+      overlayStyle,
+      instagramLinkStyle,
+      menuListWrapStyle,
+      overlayLogoStyle,
+      toggleMenu: () => this.toggleMenu(),
+      viewWrapperStyle,
+      viewWrapperStyleGallery,
+      dotRef: this.dotRef,
+      ringRef: this.ringRef,
+      bgRef: this.bgRef,
+      bgCenterStyle,
+      bgLoopStyle,
+      bgSuperStyle,
+      bgUnitStyle,
+      bgQuadrants: Array.from({ length: GRID_N * GRID_N }, (_, i) =>
+        makeBgUnitTiles(String.fromCharCode(65 + (i % 26)))
+      ),
+      filters,
+      galleryItems: makeGalleryItems(active),
+      galleryLabel: `${active} / X-iO`,
+      goHero: () => this.setFilter('home'),
+    };
+  }
+}
+</script>
+</body>
+</html>
