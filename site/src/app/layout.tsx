@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   title: "X-iO — Photography, Berlin",
   description: "X-iO is a Berlin-based Designer and Digital Agency.",
   icons: {
-    icon: "/favicon.png",
+    icon: "/icon.png",
   },
 };
 
