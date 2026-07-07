@@ -30,8 +30,14 @@ export default function HamburgerMenu() {
       >
         {open ? (
           <>
-            <span className={styles.closeLine} style={{ transform: "rotate(45deg)" }} />
-            <span className={styles.closeLine} style={{ transform: "rotate(-45deg)" }} />
+            <span
+              className={styles.closeLine}
+              style={{ transform: "rotate(45deg)" }}
+            />
+            <span
+              className={styles.closeLine}
+              style={{ transform: "rotate(-45deg)" }}
+            />
           </>
         ) : (
           <Image
@@ -39,7 +45,7 @@ export default function HamburgerMenu() {
             alt="Menu"
             width={64}
             height={64}
-            style={{ width: "100%", height: "100%", objectFit: "contain" }}
+            style={{ width: "130%", height: "130%", objectFit: "contain" }}
             priority
           />
         )}

@@ -90,32 +90,40 @@
   color: rgba(1, 1, 1, 0.7);
 }
 
-/* Mobile: the 50%-margin desktop layout pushes text past the viewport edge
-   and .overlay's overflow:hidden then clips it. Left-align instead. */
-@media (max-width: 640px) {
+/* Mobile + Tablet: left-align menu items */
+@media (max-width: 1024px) {
   .overlay {
     align-items: flex-start;
   }
 
-  .sideLink,
   .listWrap {
     margin-left: 0;
     width: 100%;
     padding-left: 32px;
+    align-items: flex-start;
     text-align: left;
   }
 
-  .listWrap {
-    align-items: flex-start;
+  .sideLink {
+    margin-left: 32px;
+    width: auto;
   }
 
   .menuItem {
     text-align: left;
+    width: 100%;
   }
 }
 
-/* Desktop: enlarge the hamburger/close tap target and icon. */
+/* Desktop: keep 50% margin + enlarge hamburger tap target */
 @media (min-width: 1025px) {
+  .listWrap {
+    margin-left: 50%;
+    width: fit-content;
+    padding-left: 0;
+    align-items: flex-start;
+  }
+
   .button {
     width: 72px;
     height: 72px;

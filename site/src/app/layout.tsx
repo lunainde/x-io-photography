@@ -17,9 +17,11 @@ const sourceCodePro = Source_Code_Pro({
 });
 
 export const metadata: Metadata = {
-  title: "X-iO — Photography & Film, Berlin",
-  description:
-    "X-iO is a Berlin-based photography and digital agency. Editorial, architectural, and documentary work.",
+  title: "X-iO — Photography, Berlin",
+  description: "X-iO is a Berlin-based Designer and Digital Agency.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({

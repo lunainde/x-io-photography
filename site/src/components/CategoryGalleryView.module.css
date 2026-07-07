@@ -7,7 +7,8 @@
 
 .content {
   flex: 1;
-  padding: 110px 40px 60px 40px;
+  padding: 40px 40px 40px 40px;
+  position: relative;
 }
 
 .label {
@@ -16,5 +17,10 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--color-fg);
-  margin-bottom: 24px;
+  position: fixed;
+  top: 40px;
+  left: 40px;
+  z-index: 10;
+  margin-bottom: 0;
+  pointer-events: none;
 }
