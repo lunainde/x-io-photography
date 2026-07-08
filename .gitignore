@@ -1,0 +1,4 @@
+# Raw source photos/videos for bulk Sanity import — never committed,
+# Sanity itself is the actual asset store. See site/scripts/import-media.mjs.
+media-import/
+.DS_Store

@@ -13,13 +13,15 @@ export const mediaItem = defineType({
       description: "Internal label only, not shown on the site.",
     }),
     defineField({
-      name: "category",
-      title: "Category",
-      type: "string",
+      name: "categories",
+      title: "Categories",
+      description: "A photo can belong to more than one gallery.",
+      type: "array",
+      of: [{ type: "string" }],
       options: {
         list: CATEGORIES.map((c) => ({ title: c.label, value: c.slug })),
       },
-      validation: (rule) => rule.required(),
+      validation: (rule) => rule.required().min(1),
     }),
     defineField({
       name: "mediaType",
@@ -82,11 +84,11 @@ export const mediaItem = defineType({
     }),
   ],
   preview: {
-    select: { title: "title", category: "category", media: "image" },
-    prepare({ title, category, media }) {
+    select: { title: "title", categories: "categories", media: "image" },
+    prepare({ title, categories, media }) {
       return {
         title: title || "(untitled)",
-        subtitle: category,
+        subtitle: (categories || []).join(", "),
         media,
       };
     },

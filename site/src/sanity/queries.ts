@@ -30,7 +30,7 @@ export async function getMediaByCategory(
 ): Promise<MediaItem[]> {
   if (!client) return [];
   return client.fetch(
-    `*[_type == "mediaItem" && category == $category] | order(order asc, _createdAt asc) ${MEDIA_ITEM_PROJECTION}`,
+    `*[_type == "mediaItem" && $category in categories] | order(order asc, _createdAt asc) ${MEDIA_ITEM_PROJECTION}`,
     { category },
     { next: { revalidate: 60 } }
   );

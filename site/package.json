@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "import-media": "node scripts/import-media.mjs"
   },
   "dependencies": {
     "@sanity/image-url": "^2.1.1",
@@ -19,10 +20,12 @@
     "sanity": "^6.3.0"
   },
   "devDependencies": {
+    "@sanity/client": "^7.23.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "tailwindcss": "^4",
