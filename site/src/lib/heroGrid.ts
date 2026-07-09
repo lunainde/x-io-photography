@@ -9,11 +9,14 @@ export const COPY = 1080;
 export const GRID_N = 5;
 export const SUPER = COPY * GRID_N;
 
-// 4x4 grid-template-areas: a mix of big/landscape/portrait/square cells that
-// tile the unit with zero gaps — every one of the 16 cells is claimed
-// exactly once across the 8 named areas.
-export const AREA_TEMPLATE = '"A A B C" "A A B D" "E F F D" "G G H D"';
-export const AREA_NAMES = ["A", "B", "C", "D", "E", "F", "G", "H"] as const;
+// 2x2 grid-template-areas over a 5fr/4fr column+row split (see .unit in
+// HeroBackground.module.css). Because both axes use the same 5:4 split of
+// the same available space, every cell lands on an exact ratio: A is a
+// square (5fr x 5fr), B is a 4:5 portrait (4fr x 5fr), C is a 5:4 landscape
+// (5fr x 4fr), D is a smaller square (4fr x 4fr). This lets source photos be
+// prepared at exactly one of three ratios with no ambiguity.
+export const AREA_TEMPLATE = '"A B" "C D"';
+export const AREA_NAMES = ["A", "B", "C", "D"] as const;
 
 export function stripePattern(seed: number) {
   const c1 = seed % 2 === 0 ? "#c9c9c9" : "#c2c2c2";
