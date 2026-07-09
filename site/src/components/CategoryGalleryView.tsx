@@ -10,12 +10,13 @@ export default async function CategoryGalleryView({
   category: CategorySlug;
 }) {
   const items = await getMediaByCategory(category);
+  const borderColor = category === "black-white" ? "var(--color-accent)" : "#b0b0b0";
 
   return (
     <div className={styles.view}>
       <div className={styles.content}>
         <div className={styles.label}>{category.replace("-", " & ")} / X-iO</div>
-        <GalleryGrid items={items} />
+        <GalleryGrid items={items} borderColor={borderColor} />
       </div>
       <Footer />
     </div>

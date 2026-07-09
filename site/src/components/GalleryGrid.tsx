@@ -5,12 +5,18 @@ import styles from "./GalleryGrid.module.css";
 
 const PLACEHOLDER_HEIGHTS = [260, 340, 220, 300, 260, 380, 240, 300, 260];
 
-export default function GalleryGrid({ items }: { items: MediaItem[] }) {
+export default function GalleryGrid({
+  items,
+  borderColor,
+}: {
+  items: MediaItem[];
+  borderColor: string;
+}) {
   if (items.length === 0) {
     return (
       <div className={styles.grid}>
         {PLACEHOLDER_HEIGHTS.map((h, i) => (
-          <div key={i} className={styles.tile}>
+          <div key={i} className={styles.tile} style={{ borderColor }}>
             <div style={{ width: "100%", height: h, background: stripePattern(i) }} />
           </div>
         ))}
@@ -21,7 +27,7 @@ export default function GalleryGrid({ items }: { items: MediaItem[] }) {
   return (
     <div className={styles.grid}>
       {items.map((item) => (
-        <div key={item._id} className={styles.tile}>
+        <div key={item._id} className={styles.tile} style={{ borderColor }}>
           {item.mediaType === "video" && item.videoUrl ? (
             <video
               src={item.videoUrl}
