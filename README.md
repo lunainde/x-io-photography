@@ -1,25 +1,89 @@
-# CODING AGENTS: READ THIS FIRST
+# X-iO — Photography & Film, Berlin
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+The X-iO photography/video portfolio site. Built with Next.js and Sanity CMS.
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+The actual app lives in **[`site/`](site/)** — all commands below are run from
+inside that folder.
 
-## What you should do — IMPORTANT
+## Running it locally
 
-**Read the chat transcripts first.** There are 2 chat transcript(s) in `chats/`. The transcripts show the full back-and-forth between the user and the design assistant — they tell you **what the user actually wants** and **where they landed** after iterating. Don't skip them. The final HTML files are the output, but the chat is where the intent lives.
+```bash
+cd site
+npm install
+npm run dev
+```
 
-**Read `project/X-iO Portfolio.dc.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+Then open **http://localhost:3000**.
 
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
+## Managing images and videos
 
-## About the design files
+Content is managed in **Sanity Studio**, embedded right in the app at
+**http://localhost:3000/studio** (sign in with the account used to create the
+Sanity project). No separate tool or login needed.
 
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
+### Add, edit, or delete a single photo/video
 
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
+1. Open `/studio`.
+2. Click **Media item** in the left sidebar to see everything currently live.
+3. To add: click **+** (top right), fill in:
+   - **Title** — internal label only, not shown on the site
+   - **Categories** — pick one or more: home, architecture, black & white,
+     color, food, places, berlin. A photo can belong to several at once (e.g.
+     a Berlin shot that's also color and architecture) — just check all that
+     apply.
+   - **Media type** — image or video
+   - **Image**/**Video file** — upload it
+   - **Alt text** — required, describes the photo for accessibility/SEO
+   - **Order** — optional number; lower shows first within a category
+   - Click **Publish** (top right) — drafts don't show on the live site.
+4. To edit or delete: click any existing item in the list, change fields (or
+   use the **⋯** menu → **Delete**), then Publish.
 
-## Bundle contents
+Changes appear on the live site within about a minute.
 
-- `README.md` — this file
-- `chats/` — conversation transcripts (read these!)
-- `project/` — the `X-iO Photography Portfolio` project files (HTML prototypes, assets, components)
+### Adding a lot of photos at once (bulk import)
+
+For dozens/hundreds of images, use the bulk-import script instead of adding
+them one by one:
+
+1. Create a `media-import/` folder next to `site/` (i.e. at the same level as
+   this README), with one subfolder per category:
+   ```
+   media-import/
+     home/
+     architecture/
+     black-white/
+     color/
+     food/
+     places/
+     berlin/
+   ```
+2. Drop photos into the matching folder(s). **If a photo belongs to more than
+   one category, copy the same file into each relevant folder** — the script
+   detects it's the same photo and tags it with all of them instead of
+   creating duplicates.
+3. In `site/.env.local`, add a write-access token (Sanity project → API →
+   Tokens → Add token → **Editor** permission):
+   ```
+   SANITY_API_TOKEN=sk...
+   ```
+4. From `site/`, run:
+   ```bash
+   npm run import-media
+   ```
+5. Check `/studio` afterward to review/adjust titles, alt text, and ordering.
+
+`media-import/` is git-ignored — it's just a local staging folder, Sanity is
+the actual storage.
+
+## Project structure
+
+```
+site/     the whole Next.js app — see site/README.md for setup,
+          deployment, and architecture details
+```
+
+## Deploying
+
+See [`site/README.md`](site/README.md) for connecting a Sanity project and
+deploying to a custom domain.

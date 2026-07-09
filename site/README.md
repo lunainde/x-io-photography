@@ -1,7 +1,8 @@
 # X-iO — Photography Portfolio
 
-Next.js implementation of the X-iO design (see `../chats/` and `../project/` at
-the repo root for the original Claude Design handoff this was built from).
+Next.js implementation of the X-iO design. See the repo root
+[`README.md`](../README.md) for day-to-day usage (running locally, adding/
+removing images); this file covers setup and deployment.
 
 ## Stack
 
@@ -41,11 +42,13 @@ and videos:
 
 4. Restart `npm run dev`, then open http://localhost:3000/studio and sign in
    with the same account. You'll see one document type, **Media item**, with
-   fields for category (home / architecture / black & white / color / food /
-   places / berlin), image or video upload, alt text, and a sort order.
+   fields for categories (home / architecture / black & white / color / food /
+   places / berlin — a photo can belong to more than one), image or video
+   upload, alt text, and a sort order.
 5. Add a few items to the **home** category — that's the curated set that
    drives the animated hero. Add items to the other categories to fill out
-   each gallery page.
+   each gallery page. For bulk imports of many photos at once, see the root
+   [`README.md`](../README.md#adding-a-lot-of-photos-at-once-bulk-import).
 
 Deploy the Studio itself (so editors don't need a local dev server) with:
 
@@ -59,7 +62,7 @@ same way once the env vars above are set there too.
 ### Adding a new page/category later
 
 Add the slug to `src/lib/categories.ts` (label, route, hover color), add the
-option to the `category` field in `src/sanity/schemaTypes/mediaItem.ts`, and
+option to the `categories` field in `src/sanity/schemaTypes/mediaItem.ts`, and
 create `src/app/<slug>/page.tsx` following the existing category pages as a
 template.
 
