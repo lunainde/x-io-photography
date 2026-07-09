@@ -1,7 +1,7 @@
 /* Mobile first — 1 column */
 .grid {
   columns: 1;
-  column-gap: 15px;
+  column-gap: 80px;
   width: 100%;
 }
 
