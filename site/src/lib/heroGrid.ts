@@ -5,7 +5,7 @@
 // seamlessly. GRID_N tiles per side keeps the background larger than any
 // viewport even after the loop's translate, so no raw canvas is ever
 // exposed at the edges (see chat1 for the debugging history behind this).
-export const COPY = 1080;
+export const COPY = 540;
 export const GRID_N = 5;
 export const SUPER = COPY * GRID_N;
 

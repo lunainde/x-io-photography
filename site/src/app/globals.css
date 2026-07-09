@@ -50,6 +50,6 @@ button {
     transform: translate(0, 0);
   }
   100% {
-    transform: translate(1080px, -1080px);
+    transform: translate(540px, -540px);
   }
 }
