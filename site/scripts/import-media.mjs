@@ -4,6 +4,11 @@
 // it was found in (same file dropped in multiple folders -> one document
 // with multiple categories, not multiple documents).
 //
+// Safe to re-run: documents already imported (same file content, deterministic
+// hash-based _id) are skipped entirely -- their asset is not re-uploaded, and
+// any title/alt text/order you've hand-edited in Studio since is left alone.
+// Only files not yet in Sanity get created.
+//
 // Usage (from site/):
 //   npm run import-media
 //   npm run import-media -- ../media-import   (custom source folder)
@@ -92,20 +97,49 @@ if (byHash.size === 0) {
 
 console.log(`Found ${byHash.size} unique image(s) across category folders in ${rootDir}\n`);
 
+const existing = new Map(
+  (await client.fetch(`*[_type == "mediaItem"]{_id, categories}`)).map((d) => [
+    d._id,
+    d.categories || [],
+  ])
+);
+
 let i = 0;
+let imported = 0;
+let retagged = 0;
+let skipped = 0;
 for (const [hash, info] of byHash) {
   i++;
   const docId = `mediaItem-${hash.slice(0, 16)}`;
-  const categories = Array.from(info.categories);
-  const title = humanize(info.filename);
+  const categories = Array.from(info.categories).sort();
 
+  if (existing.has(docId)) {
+    const current = [...existing.get(docId)].sort();
+    const unchanged =
+      current.length === categories.length &&
+      current.every((c, idx) => c === categories[idx]);
+
+    if (unchanged) {
+      console.log(`[${i}/${byHash.size}] ${info.filename} -> already imported, skipping`);
+      skipped++;
+    } else {
+      console.log(
+        `[${i}/${byHash.size}] ${info.filename} -> categories changed, updating to: ${categories.join(", ")}`
+      );
+      await client.patch(docId).set({ categories }).commit();
+      retagged++;
+    }
+    continue;
+  }
+
+  const title = humanize(info.filename);
   console.log(`[${i}/${byHash.size}] ${info.filename} -> ${categories.join(", ")}`);
 
   const asset = await client.assets.upload("image", readFileSync(info.path), {
     filename: info.filename,
   });
 
-  await client.createOrReplace({
+  await client.createIfNotExists({
     _id: docId,
     _type: "mediaItem",
     title,
@@ -118,6 +152,12 @@ for (const [hash, info] of byHash) {
       asset: { _type: "reference", _ref: asset._id },
     },
   });
+  imported++;
 }
 
-console.log("\nDone. Check the Studio (/studio) to review titles, alt text, and order.");
+console.log(
+  `\nDone. ${imported} new, ${retagged} re-tagged, ${skipped} already there (untouched).`
+);
+if (imported > 0) {
+  console.log("Check the Studio (/studio) to review titles, alt text, and order for the new ones.");
+}
