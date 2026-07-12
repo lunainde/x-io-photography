@@ -1,13 +1,23 @@
 #!/usr/bin/env node
 // One-time/repeatable bulk importer: walks media-import/<category>/*, uploads
-// each unique image to Sanity once, and tags it with every category folder
-// it was found in (same file dropped in multiple folders -> one document
-// with multiple categories, not multiple documents).
+// each photo to Sanity, and tags it with every category folder it was found
+// in (same filename dropped in multiple folders -> one document with
+// multiple categories, not multiple documents).
 //
-// Safe to re-run: documents already imported (same file content, deterministic
-// hash-based _id) are skipped entirely -- their asset is not re-uploaded, and
-// any title/alt text/order you've hand-edited in Studio since is left alone.
-// Only files not yet in Sanity get created.
+// Identity is by FILENAME (stable across edits), not file content:
+// - New filename                          -> creates a new document
+// - Existing filename, unchanged content   -> skipped entirely (title/alt/
+//                                             order you edited in Studio are
+//                                             left alone)
+// - Existing filename, unchanged content,
+//   different folder placement            -> only `categories` is patched
+// - Existing filename, CHANGED content
+//   (e.g. a contrast/crop re-export)       -> re-uploads the asset and
+//                                             updates `image` + categories,
+//                                             still leaves title/alt/order
+//                                             alone
+// Renaming a file on re-export is treated as a brand new photo -- keep
+// filenames stable across edits to get the "replace" behavior.
 //
 // Usage (from site/):
 //   npm run import-media
@@ -62,11 +72,18 @@ function humanize(filename) {
     .trim();
 }
 
+function slugify(str) {
+  return str
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function hashFile(path) {
   return createHash("sha256").update(readFileSync(path)).digest("hex");
 }
 
-const byHash = new Map(); // hash -> { path, filename, categories: Set }
+const byFilename = new Map(); // filename -> { path, categories: Set }
 
 for (const category of CATEGORIES) {
   const dir = join(rootDir, category);
@@ -82,82 +99,91 @@ for (const category of CATEGORIES) {
     const fullPath = join(dir, entry);
     if (!statSync(fullPath).isFile()) continue;
 
-    const hash = hashFile(fullPath);
-    if (!byHash.has(hash)) {
-      byHash.set(hash, { path: fullPath, filename: entry, categories: new Set() });
+    if (!byFilename.has(entry)) {
+      byFilename.set(entry, { path: fullPath, categories: new Set() });
     }
-    byHash.get(hash).categories.add(category);
+    byFilename.get(entry).categories.add(category);
   }
 }
 
-if (byHash.size === 0) {
+if (byFilename.size === 0) {
   console.log(`No images found under ${rootDir}. Expected subfolders: ${CATEGORIES.join(", ")}`);
   process.exit(0);
 }
 
-console.log(`Found ${byHash.size} unique image(s) across category folders in ${rootDir}\n`);
+console.log(`Found ${byFilename.size} image(s) across category folders in ${rootDir}\n`);
 
 const existing = new Map(
-  (await client.fetch(`*[_type == "mediaItem"]{_id, categories}`)).map((d) => [
+  (await client.fetch(`*[_type == "mediaItem"]{_id, categories, importHash}`)).map((d) => [
     d._id,
-    d.categories || [],
+    { categories: d.categories || [], importHash: d.importHash },
   ])
 );
 
 let i = 0;
-let imported = 0;
+let created = 0;
+let updated = 0;
 let retagged = 0;
 let skipped = 0;
-for (const [hash, info] of byHash) {
+
+for (const [filename, info] of byFilename) {
   i++;
-  const docId = `mediaItem-${hash.slice(0, 16)}`;
+  const docId = `mediaItem-${slugify(basename(filename, extname(filename)))}`;
   const categories = Array.from(info.categories).sort();
+  const hash = hashFile(info.path);
 
-  if (existing.has(docId)) {
-    const current = [...existing.get(docId)].sort();
-    const unchanged =
-      current.length === categories.length &&
-      current.every((c, idx) => c === categories[idx]);
+  const prior = existing.get(docId);
 
-    if (unchanged) {
-      console.log(`[${i}/${byHash.size}] ${info.filename} -> already imported, skipping`);
+  if (prior && prior.importHash === hash) {
+    const sameCategories =
+      prior.categories.length === categories.length &&
+      [...prior.categories].sort().every((c, idx) => c === categories[idx]);
+
+    if (sameCategories) {
+      console.log(`[${i}/${byFilename.size}] ${filename} -> unchanged, skipping`);
       skipped++;
     } else {
-      console.log(
-        `[${i}/${byHash.size}] ${info.filename} -> categories changed, updating to: ${categories.join(", ")}`
-      );
+      console.log(`[${i}/${byFilename.size}] ${filename} -> categories changed: ${categories.join(", ")}`);
       await client.patch(docId).set({ categories }).commit();
       retagged++;
     }
     continue;
   }
 
-  const title = humanize(info.filename);
-  console.log(`[${i}/${byHash.size}] ${info.filename} -> ${categories.join(", ")}`);
+  const asset = await client.assets.upload("image", readFileSync(info.path), { filename });
 
-  const asset = await client.assets.upload("image", readFileSync(info.path), {
-    filename: info.filename,
-  });
-
-  await client.createIfNotExists({
-    _id: docId,
-    _type: "mediaItem",
-    title,
-    mediaType: "image",
-    categories,
-    alt: title,
-    order: i,
-    image: {
-      _type: "image",
-      asset: { _type: "reference", _ref: asset._id },
-    },
-  });
-  imported++;
+  if (prior) {
+    console.log(`[${i}/${byFilename.size}] ${filename} -> content changed, replacing image`);
+    await client
+      .patch(docId)
+      .set({
+        categories,
+        importHash: hash,
+        image: { _type: "image", asset: { _type: "reference", _ref: asset._id } },
+      })
+      .commit();
+    updated++;
+  } else {
+    const title = humanize(filename);
+    console.log(`[${i}/${byFilename.size}] ${filename} -> new, categories: ${categories.join(", ")}`);
+    await client.createIfNotExists({
+      _id: docId,
+      _type: "mediaItem",
+      title,
+      mediaType: "image",
+      categories,
+      alt: title,
+      order: i,
+      importHash: hash,
+      image: { _type: "image", asset: { _type: "reference", _ref: asset._id } },
+    });
+    created++;
+  }
 }
 
 console.log(
-  `\nDone. ${imported} new, ${retagged} re-tagged, ${skipped} already there (untouched).`
+  `\nDone. ${created} new, ${updated} content-updated, ${retagged} re-tagged, ${skipped} unchanged.`
 );
-if (imported > 0) {
-  console.log("Check the Studio (/studio) to review titles, alt text, and order for the new ones.");
+if (created > 0 || updated > 0) {
+  console.log("Check the Studio (/studio) to review titles, alt text, and order.");
 }
