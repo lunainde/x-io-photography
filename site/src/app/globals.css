@@ -41,8 +41,12 @@ button {
   }
 }
 
+/* Constant-speed, linear (no easing) diagonal drift for the home hero
+   masonry. Duration and translate distance are tuned together with
+   COPY in src/lib/heroGrid.ts -- the translate distance must exactly
+   match COPY for the loop to wrap with no visible seam. */
 .tiled-bg-loop {
-  animation: bgLoop 90s linear infinite;
+  animation: bgLoop 220s linear infinite;
 }
 
 @keyframes bgLoop {
@@ -50,6 +54,6 @@ button {
     transform: translate(0, 0);
   }
   100% {
-    transform: translate(540px, -540px);
+    transform: translate(900px, -900px);
   }
 }

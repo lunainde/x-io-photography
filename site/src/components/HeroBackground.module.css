@@ -6,11 +6,6 @@
   background: var(--color-bg);
 }
 
-.offsetLayer {
-  position: absolute;
-  inset: 0;
-}
-
 .center {
   position: absolute;
   top: 50%;
@@ -27,31 +22,30 @@
 .unit {
   width: 100%;
   height: 100%;
-  display: grid;
-  grid-template-columns: 5fr 4fr;
-  grid-template-rows: 5fr 4fr;
-  gap: 80px;
-  padding: 40px;
+  overflow: hidden;
   box-sizing: border-box;
 }
 
-.tileWrap {
-  position: relative;
+.tile {
+  width: 100%;
+  break-inside: avoid;
   border: 1px solid var(--color-accent);
   box-sizing: border-box;
   overflow: hidden;
-}
-
-.tileInner {
-  position: absolute;
-  inset: 0;
   transition: filter 0.3s ease;
 }
 
-.tileWrap:hover .tileInner {
+.tile:hover {
   filter: saturate(1.15) sepia(0.08);
 }
 
 .tileImage {
-  object-fit: cover;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.placeholder {
+  display: block;
+  width: 100%;
 }
