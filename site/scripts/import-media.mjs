@@ -1,23 +1,13 @@
 #!/usr/bin/env node
-// One-time/repeatable bulk importer: walks media-import/<category>/*, uploads
-// each photo to Sanity, and tags it with every category folder it was found
-// in (same filename dropped in multiple folders -> one document with
-// multiple categories, not multiple documents).
+// Full-replace bulk importer: WIPES every existing mediaItem document in
+// Sanity, then re-creates one per photo found under media-import/<category>/*,
+// tagged with every category folder it appears in (same filename in multiple
+// folders -> one multi-category document, not multiple documents).
 //
-// Identity is by FILENAME (stable across edits), not file content:
-// - New filename                          -> creates a new document
-// - Existing filename, unchanged content   -> skipped entirely (title/alt/
-//                                             order you edited in Studio are
-//                                             left alone)
-// - Existing filename, unchanged content,
-//   different folder placement            -> only `categories` is patched
-// - Existing filename, CHANGED content
-//   (e.g. a contrast/crop re-export)       -> re-uploads the asset and
-//                                             updates `image` + categories,
-//                                             still leaves title/alt/order
-//                                             alone
-// Renaming a file on re-export is treated as a brand new photo -- keep
-// filenames stable across edits to get the "replace" behavior.
+// This is destructive by design: media-import/ is treated as the single
+// source of truth. Anything currently in Sanity that isn't in your local
+// folders right now gets deleted. Re-run any time your local selection
+// changes (added, removed, or edited photos) to bring Sanity back in sync.
 //
 // Usage (from site/):
 //   npm run import-media
@@ -27,7 +17,6 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 
 import { createClient } from "@sanity/client";
-import { createHash } from "node:crypto";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, extname, join } from "node:path";
 
@@ -79,10 +68,6 @@ function slugify(str) {
     .replace(/^-+|-+$/g, "");
 }
 
-function hashFile(path) {
-  return createHash("sha256").update(readFileSync(path)).digest("hex");
-}
-
 const byFilename = new Map(); // filename -> { path, categories: Set }
 
 for (const category of CATEGORIES) {
@@ -111,79 +96,40 @@ if (byFilename.size === 0) {
   process.exit(0);
 }
 
-console.log(`Found ${byFilename.size} image(s) across category folders in ${rootDir}\n`);
+const existingIds = await client.fetch(`*[_type == "mediaItem"]._id`);
+if (existingIds.length > 0) {
+  console.log(`Deleting ${existingIds.length} existing media item(s)...`);
+  const tx = client.transaction();
+  existingIds.forEach((id) => tx.delete(id));
+  await tx.commit();
+}
 
-const existing = new Map(
-  (await client.fetch(`*[_type == "mediaItem"]{_id, categories, importHash}`)).map((d) => [
-    d._id,
-    { categories: d.categories || [], importHash: d.importHash },
-  ])
-);
+console.log(`Importing ${byFilename.size} image(s) from ${rootDir}\n`);
 
 let i = 0;
-let created = 0;
-let updated = 0;
-let retagged = 0;
-let skipped = 0;
-
 for (const [filename, info] of byFilename) {
   i++;
   const docId = `mediaItem-${slugify(basename(filename, extname(filename)))}`;
-  const categories = Array.from(info.categories).sort();
-  const hash = hashFile(info.path);
+  const categories = Array.from(info.categories);
+  const title = humanize(filename);
 
-  const prior = existing.get(docId);
-
-  if (prior && prior.importHash === hash) {
-    const sameCategories =
-      prior.categories.length === categories.length &&
-      [...prior.categories].sort().every((c, idx) => c === categories[idx]);
-
-    if (sameCategories) {
-      console.log(`[${i}/${byFilename.size}] ${filename} -> unchanged, skipping`);
-      skipped++;
-    } else {
-      console.log(`[${i}/${byFilename.size}] ${filename} -> categories changed: ${categories.join(", ")}`);
-      await client.patch(docId).set({ categories }).commit();
-      retagged++;
-    }
-    continue;
-  }
+  console.log(`[${i}/${byFilename.size}] ${filename} -> ${categories.join(", ")}`);
 
   const asset = await client.assets.upload("image", readFileSync(info.path), { filename });
 
-  if (prior) {
-    console.log(`[${i}/${byFilename.size}] ${filename} -> content changed, replacing image`);
-    await client
-      .patch(docId)
-      .set({
-        categories,
-        importHash: hash,
-        image: { _type: "image", asset: { _type: "reference", _ref: asset._id } },
-      })
-      .commit();
-    updated++;
-  } else {
-    const title = humanize(filename);
-    console.log(`[${i}/${byFilename.size}] ${filename} -> new, categories: ${categories.join(", ")}`);
-    await client.createIfNotExists({
-      _id: docId,
-      _type: "mediaItem",
-      title,
-      mediaType: "image",
-      categories,
-      alt: title,
-      order: i,
-      importHash: hash,
-      image: { _type: "image", asset: { _type: "reference", _ref: asset._id } },
-    });
-    created++;
-  }
+  await client.create({
+    _id: docId,
+    _type: "mediaItem",
+    title,
+    mediaType: "image",
+    categories,
+    alt: title,
+    order: i,
+    image: {
+      _type: "image",
+      asset: { _type: "reference", _ref: asset._id },
+    },
+  });
 }
 
-console.log(
-  `\nDone. ${created} new, ${updated} content-updated, ${retagged} re-tagged, ${skipped} unchanged.`
-);
-if (created > 0 || updated > 0) {
-  console.log("Check the Studio (/studio) to review titles, alt text, and order.");
-}
+console.log(`\nDone. Library replaced: ${existingIds.length} removed, ${byFilename.size} imported.`);

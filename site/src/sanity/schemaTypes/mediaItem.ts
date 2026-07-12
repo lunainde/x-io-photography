@@ -82,13 +82,6 @@ export const mediaItem = defineType({
       description: "Lower numbers appear first within their category.",
       initialValue: 0,
     }),
-    defineField({
-      name: "importHash",
-      title: "Import hash",
-      type: "string",
-      description: "Used by scripts/import-media.mjs to detect edited source files. Do not edit.",
-      hidden: true,
-    }),
   ],
   preview: {
     select: { title: "title", categories: "categories", media: "image" },
