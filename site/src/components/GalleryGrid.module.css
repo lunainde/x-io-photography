@@ -12,10 +12,10 @@
   }
 }
 
-/* Desktop — 3 columns */
+/* Desktop — 4 columns */
 @media (min-width: 1024px) {
   .grid {
-    columns: 3;
+    columns: 4;
   }
 }
 
