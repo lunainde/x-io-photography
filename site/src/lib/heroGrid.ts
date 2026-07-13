@@ -11,10 +11,18 @@
 // applies).
 export const COPY = 1500;
 export const GRID_N = 5;
-export const SUPER = COPY * GRID_N;
-
+// export const SUPER = COPY * GRID_N;
 export const MASONRY_COLUMNS = 4;
 export const MASONRY_GAP = 64; // px -- generous "breathing room" between photos
+
+// NEW FIX: Calculate the exact mathematical period for the seamless loop
+export const PERIOD = COPY + MASONRY_GAP;
+
+// NEW FIX: SUPER must account for the gaps between the GRID_N units, otherwise the 1fr tracks get squished!
+export const SUPER = (COPY * GRID_N) + (MASONRY_GAP * (GRID_N - 1));
+
+
+
 export const COLUMN_WIDTH =
   (COPY - (MASONRY_COLUMNS - 1) * MASONRY_GAP) / MASONRY_COLUMNS;
 

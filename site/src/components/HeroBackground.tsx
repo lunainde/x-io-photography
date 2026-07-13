@@ -12,6 +12,7 @@ import {
   MASONRY_GAP,
   PLACEHOLDER_RATIOS,
   SUPER,
+  PERIOD, // <--- ADDED THIS
   packMasonryColumns,
   stripePattern,
 } from "@/lib/heroGrid";
@@ -54,11 +55,17 @@ export default function HeroBackground({ items }: { items: MediaItem[] }) {
   const units = useMemo(
     () =>
       Array.from({ length: GRID_N * GRID_N }, (_, unitIndex) =>
-        packMasonryColumns<Slot>(MASONRY_COLUMNS, COPY, MASONRY_GAP, COLUMN_WIDTH, (i) =>
-          pickSlot(unitIndex * 1000 + i, items)
-        )
+        // NEW FIX: Use PERIOD as the target height so columns don't end prematurely PERIOD instead of COPY, which is the width of the whole super-grid. This ensures that the columns fill the entire height of the unit and don't leave gaps at the bottom.
+        packMasonryColumns<Slot>(
+          MASONRY_COLUMNS,
+          PERIOD,
+          MASONRY_GAP,
+          COLUMN_WIDTH,
+          // (i) => pickSlot(unitIndex * 1000 + i, items),
+          (i) => pickSlot(i, items),
+        ),
       ),
-    [items]
+    [items],
   );
 
   useEffect(() => {
@@ -82,8 +89,10 @@ export default function HeroBackground({ items }: { items: MediaItem[] }) {
       // through an animation whose path and repeat point are fixed, never
       // touching the values themselves or restarting it.
       const tween = gsap.to(loopRef.current, {
-        x: COPY,
-        y: -COPY,
+        // x: COPY,
+        // y: -COPY,
+        x: PERIOD, // NEW FIX Changed from COPY
+        y: -PERIOD, // NEW FIX Changed from -COPY
         duration: BASE_LOOP_SECONDS,
         ease: "none",
         repeat: -1,
@@ -144,18 +153,31 @@ export default function HeroBackground({ items }: { items: MediaItem[] }) {
             }}
           >
             {units.map((columns, unitIndex) => (
-              <div key={unitIndex} className={styles.unit} style={{ gap: MASONRY_GAP }}>
+              <div
+                key={unitIndex}
+                className={styles.unit}
+                style={{ gap: MASONRY_GAP }}
+              >
                 {columns.map((column, colIndex) => (
-                  <div key={colIndex} className={styles.column} style={{ gap: MASONRY_GAP }}>
+                  <div
+                    key={colIndex}
+                    className={styles.column}
+                    style={{ gap: MASONRY_GAP }}
+                  >
                     {column.map((slot, slotIndex) => {
-                      const offset = COLLAGE_OFFSETS[(colIndex * 7 + slotIndex) % COLLAGE_OFFSETS.length];
+                      const offset =
+                        COLLAGE_OFFSETS[
+                          (colIndex * 7 + slotIndex) % COLLAGE_OFFSETS.length
+                        ];
                       return (
                         <div
                           key={slotIndex}
                           className={styles.tile}
                           style={{ marginTop: slotIndex === 0 ? offset : 0 }}
                         >
-                          {slot.item?.imageUrl && slot.item.width && slot.item.height ? (
+                          {slot.item?.imageUrl &&
+                          slot.item.width &&
+                          slot.item.height ? (
                             <Image
                               src={slot.item.imageUrl}
                               alt={slot.item.alt}
@@ -169,7 +191,9 @@ export default function HeroBackground({ items }: { items: MediaItem[] }) {
                               className={styles.placeholder}
                               style={{
                                 aspectRatio: String(slot.ratio),
-                                background: stripePattern(slot.placeholderIndex),
+                                background: stripePattern(
+                                  slot.placeholderIndex,
+                                ),
                               }}
                             />
                           )}
