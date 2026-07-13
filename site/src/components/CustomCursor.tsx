@@ -1,11 +1,19 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 const DOT_SIZE = 8;
 const DOT_SIZE_HOVER = 32; // matches the outer ring's diameter
 
+// Home and black & white lean on dark/grayscale imagery where a black dot
+// has poor contrast -- accent color reads better there. Everywhere else
+// keeps the default black dot.
+const ACCENT_DOT_ROUTES = ["/", "/black-white"];
+
 export default function CustomCursor() {
+  const pathname = usePathname();
+  const useAccentDot = ACCENT_DOT_ROUTES.includes(pathname);
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const mouse = useRef({ x: -100, y: -100 });
@@ -80,7 +88,7 @@ export default function CustomCursor() {
           left: 0,
           width: DOT_SIZE,
           height: DOT_SIZE,
-          background: "var(--color-fg)",
+          background: useAccentDot ? "var(--color-accent)" : "var(--color-fg)",
           borderRadius: "50%",
           pointerEvents: "none",
           zIndex: 9999,
