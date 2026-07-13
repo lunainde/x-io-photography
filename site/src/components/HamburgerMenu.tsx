@@ -67,6 +67,12 @@ export default function HamburgerMenu() {
               <Link
                 key={c.slug}
                 href={c.route}
+                onClick={(e) => {
+                  // If we are already on this page, just close the menu manually
+                  if (pathname === c.route) {
+                    setOpen(false);
+                  }
+                }}
                 onMouseEnter={() => setHovered(c.slug)}
                 onMouseLeave={() => setHovered(null)}
                 onFocus={() => setHovered(c.slug)}
