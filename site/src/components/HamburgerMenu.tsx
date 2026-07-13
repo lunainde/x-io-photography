@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CATEGORIES } from "@/lib/categories";
+import { OPEN_MENU_EVENT } from "@/lib/events";
 import styles from "./HamburgerMenu.module.css";
 
 export default function HamburgerMenu() {
@@ -16,6 +17,14 @@ export default function HamburgerMenu() {
     setOpen(false);
     setHovered(null);
   }, [pathname]);
+
+  // Desktop gallery tiles (GalleryGrid.tsx) dispatch this on click so
+  // clicking any photo opens navigation, same as clicking the hamburger.
+  useEffect(() => {
+    const openFromGallery = () => setOpen(true);
+    window.addEventListener(OPEN_MENU_EVENT, openFromGallery);
+    return () => window.removeEventListener(OPEN_MENU_EVENT, openFromGallery);
+  }, []);
 
   const hoverBg =
     CATEGORIES.find((c) => c.slug === hovered)?.hoverColor ?? "#E0E4E7";
