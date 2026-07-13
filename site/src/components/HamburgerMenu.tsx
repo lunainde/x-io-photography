@@ -45,7 +45,7 @@ export default function HamburgerMenu() {
             alt="Menu"
             width={64}
             height={64}
-            style={{ width: "130%", height: "130%", objectFit: "contain" }}
+            style={{ width: "200%", height: "200%", objectFit: "contain" }}
             priority
           />
         )}

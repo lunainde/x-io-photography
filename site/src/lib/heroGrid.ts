@@ -9,13 +9,14 @@
 // canvas is ever exposed at the edges (see chat1 for the debugging history
 // behind this constraint -- it predates the masonry redesign but still
 // applies).
-export const COPY = 900;
-export const GRID_N = 3;
+export const COPY = 1500;
+export const GRID_N = 5;
 export const SUPER = COPY * GRID_N;
 
 export const MASONRY_COLUMNS = 4;
-export const MASONRY_GAP = 32; // px -- generous "breathing room" between photos
-export const COLUMN_WIDTH = (COPY - (MASONRY_COLUMNS - 1) * MASONRY_GAP) / MASONRY_COLUMNS;
+export const MASONRY_GAP = 64; // px -- generous "breathing room" between photos
+export const COLUMN_WIDTH =
+  (COPY - (MASONRY_COLUMNS - 1) * MASONRY_GAP) / MASONRY_COLUMNS;
 
 // Small deterministic stagger cycle applied per tile for the hand-placed
 // "editorial collage" feel, layered on top of the natural masonry
@@ -54,7 +55,7 @@ export function packMasonryColumns<T extends { ratio: number }>(
   targetHeight: number,
   gap: number,
   columnWidth: number,
-  pickNext: (globalIndex: number) => T
+  pickNext: (globalIndex: number) => T,
 ): T[][] {
   const columns: T[][] = Array.from({ length: columnCount }, () => []);
   const heights = new Array(columnCount).fill(0);

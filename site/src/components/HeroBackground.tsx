@@ -18,7 +18,7 @@ import {
 import styles from "./HeroBackground.module.css";
 
 // Idle (no scroll) time for one full diagonal loop -- slow, luxurious drift.
-const BASE_LOOP_SECONDS = 220;
+const BASE_LOOP_SECONDS = 80;
 // Scroll velocity (px/s, from ScrollTrigger.getVelocity) that maps to +1x
 // of speed multiplier on top of the idle rate.
 const VELOCITY_SCALE = 2200;
@@ -87,6 +87,16 @@ export default function HeroBackground({ items }: { items: MediaItem[] }) {
         duration: BASE_LOOP_SECONDS,
         ease: "none",
         repeat: -1,
+        // -----------
+        // x: -COPY, // Adjust direction
+        // y: -COPY,
+        // ease: "none",
+        // scrollTrigger: {
+        //   trigger: "body", // The whole page scrolls
+        //   start: "top top",
+        //   end: "bottom bottom",
+        //   scrub: 1, // This is the magic: animation speed follows scroll speed
+        // },
       });
 
       let targetMultiplier = 1;
