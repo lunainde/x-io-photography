@@ -6,17 +6,37 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CATEGORIES } from "@/lib/categories";
 import { OPEN_MENU_EVENT } from "@/lib/events";
+import type { MediaItem } from "@/sanity/queries";
 import styles from "./HamburgerMenu.module.css";
 
-export default function HamburgerMenu() {
+export default function HamburgerMenu({
+  mediaByCategory,
+}: {
+  mediaByCategory: Record<string, MediaItem[]>;
+}) {
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
+  const [previewItem, setPreviewItem] = useState<MediaItem | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
     setOpen(false);
     setHovered(null);
+    setPreviewItem(null);
   }, [pathname]);
+
+  // Desktop only (see .preview's media query): picks a random image from
+  // the hovered category to preview on the left. True aspect ratio, no
+  // crop -- box size adapts per photo (see chat with the client on this).
+  function handleHover(slug: string) {
+    setHovered(slug);
+    const items = mediaByCategory[slug];
+    setPreviewItem(items?.length ? items[Math.floor(Math.random() * items.length)] : null);
+  }
+  function clearHover() {
+    setHovered(null);
+    setPreviewItem(null);
+  }
 
   // Desktop gallery tiles (GalleryGrid.tsx) dispatch this on click so
   // clicking any photo opens navigation, same as clicking the hamburger.
@@ -71,6 +91,25 @@ export default function HamburgerMenu() {
             instagram
           </a>
 
+          {previewItem?.imageUrl && previewItem.width && previewItem.height && (
+            <div className={styles.preview}>
+              <Image
+                src={previewItem.imageUrl}
+                alt={previewItem.alt}
+                width={previewItem.width}
+                height={previewItem.height}
+                sizes="30vw"
+                style={{
+                  display: "block",
+                  width: "auto",
+                  height: "auto",
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                }}
+              />
+            </div>
+          )}
+
           <div className={styles.listWrap}>
             {CATEGORIES.map((c) => (
               <Link
@@ -82,10 +121,10 @@ export default function HamburgerMenu() {
                     setOpen(false);
                   }
                 }}
-                onMouseEnter={() => setHovered(c.slug)}
-                onMouseLeave={() => setHovered(null)}
-                onFocus={() => setHovered(c.slug)}
-                onBlur={() => setHovered(null)}
+                onMouseEnter={() => handleHover(c.slug)}
+                onMouseLeave={clearHover}
+                onFocus={() => handleHover(c.slug)}
+                onBlur={clearHover}
                 className={styles.menuItem}
               >
                 {c.label}

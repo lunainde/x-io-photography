@@ -3,6 +3,7 @@ import { Anton, Source_Code_Pro } from "next/font/google";
 import CustomCursor from "@/components/CustomCursor";
 import HamburgerMenu from "@/components/HamburgerMenu";
 import PageTransition from "@/components/PageTransition";
+import { getAllMediaGroupedByCategory } from "@/sanity/queries";
 import "./globals.css";
 
 const anton = Anton({
@@ -24,16 +25,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const mediaByCategory = await getAllMediaGroupedByCategory();
+
   return (
     <html lang="en" className={`${anton.variable} ${sourceCodePro.variable}`}>
       <body>
         <CustomCursor />
-        <HamburgerMenu />
+        <HamburgerMenu mediaByCategory={mediaByCategory} />
         <PageTransition>{children}</PageTransition>
       </body>
     </html>
