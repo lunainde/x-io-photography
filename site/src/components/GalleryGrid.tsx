@@ -16,7 +16,7 @@ export default function GalleryGrid({
     return (
       <div className={styles.grid}>
         {PLACEHOLDER_HEIGHTS.map((h, i) => (
-          <div key={i} className={styles.tile} style={{ borderColor }}>
+          <div key={i} className={styles.tile} style={{ borderColor }} data-cursor-grow>
             <div style={{ width: "100%", height: h, background: stripePattern(i) }} />
           </div>
         ))}
@@ -27,7 +27,7 @@ export default function GalleryGrid({
   return (
     <div className={styles.grid}>
       {items.map((item) => (
-        <div key={item._id} className={styles.tile} style={{ borderColor }}>
+        <div key={item._id} className={styles.tile} style={{ borderColor }} data-cursor-grow>
           {item.mediaType === "video" && item.videoUrl ? (
             <video
               src={item.videoUrl}

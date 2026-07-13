@@ -2,6 +2,9 @@
 
 import { useEffect, useRef } from "react";
 
+const DOT_SIZE = 8;
+const DOT_SIZE_HOVER = 32; // matches the outer ring's diameter
+
 export default function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
@@ -19,7 +22,10 @@ export default function CustomCursor() {
       mouse.current.x = e.clientX;
       mouse.current.y = e.clientY;
       if (dotRef.current) {
-        dotRef.current.style.transform = `translate(${e.clientX - 4}px, ${e.clientY - 4}px)`;
+        // translate(-50%, -50%) centers the dot on the cursor regardless of
+        // its current size, so growing on hover doesn't need a separate
+        // offset recalculation.
+        dotRef.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
       }
     };
     window.addEventListener("mousemove", onMouseMove);
@@ -34,9 +40,32 @@ export default function CustomCursor() {
     };
     rafId.current = requestAnimationFrame(tick);
 
+    // Event delegation on [data-cursor-grow] (set on gallery/hero image
+    // tiles) rather than wiring hover handlers into every tile component --
+    // mouseover/mouseout bubble, so one pair of listeners here covers every
+    // image on the site, present or future.
+    const setGrow = (isHovering: boolean) => {
+      if (!dotRef.current) return;
+      const size = isHovering ? DOT_SIZE_HOVER : DOT_SIZE;
+      dotRef.current.style.width = `${size}px`;
+      dotRef.current.style.height = `${size}px`;
+    };
+    const onMouseOver = (e: MouseEvent) => {
+      if ((e.target as HTMLElement).closest("[data-cursor-grow]")) setGrow(true);
+    };
+    const onMouseOut = (e: MouseEvent) => {
+      const leaving = (e.target as HTMLElement).closest("[data-cursor-grow]");
+      const entering = (e.relatedTarget as HTMLElement | null)?.closest("[data-cursor-grow]");
+      if (leaving && leaving !== entering) setGrow(false);
+    };
+    document.addEventListener("mouseover", onMouseOver);
+    document.addEventListener("mouseout", onMouseOut);
+
     return () => {
       document.documentElement.classList.remove("custom-cursor");
       window.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseover", onMouseOver);
+      document.removeEventListener("mouseout", onMouseOut);
       cancelAnimationFrame(rafId.current);
     };
   }, []);
@@ -49,13 +78,14 @@ export default function CustomCursor() {
           position: "fixed",
           top: 0,
           left: 0,
-          width: 8,
-          height: 8,
+          width: DOT_SIZE,
+          height: DOT_SIZE,
           background: "var(--color-fg)",
           borderRadius: "50%",
           pointerEvents: "none",
           zIndex: 9999,
           transform: "translate(-100px, -100px)",
+          transition: "width 0.25s ease, height 0.25s ease",
         }}
       />
       <div

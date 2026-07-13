@@ -174,6 +174,7 @@ export default function HeroBackground({ items }: { items: MediaItem[] }) {
                           key={slotIndex}
                           className={styles.tile}
                           style={{ marginTop: slotIndex === 0 ? offset : 0 }}
+                          data-cursor-grow
                         >
                           {slot.item?.imageUrl &&
                           slot.item.width &&
