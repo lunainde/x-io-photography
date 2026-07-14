@@ -102,6 +102,18 @@ generate it.
    fills in the `alt`, `caption`, and `author` fields instead of
    auto-deriving them from the filename.
 
+**Updating one collection at a time** (to stay within the API rate/quota
+limit instead of processing everything): pass `--category`, once per
+category, to only send that category's *new* files to Gemini:
+```bash
+npm run generate-metadata -- --category black-white
+npm run generate-metadata -- --category black-white --category color
+```
+Categories left out are untouched and can be picked up in a later run. A
+photo copied into more than one category folder still gets renamed
+consistently everywhere the moment any one of its categories is included in
+a run — its other copies just aren't re-sent to Gemini.
+
 Notes:
 - **Rate limit**: paced at one request per 6 seconds to stay under the
   Gemini free tier's 10 requests/minute. For a few hundred files, expect it

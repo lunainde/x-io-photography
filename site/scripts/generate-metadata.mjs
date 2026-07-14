@@ -20,8 +20,17 @@
 // adding a few more files without re-spending API quota on ones already
 // processed.
 //
+// To stay within a rate/quota limit, scope a run to one or more categories
+// with --category -- only NEW files in those categories are sent to Gemini.
+// (The full folder tree is still scanned either way, at no API cost, so a
+// multi-category file's other copies get renamed to match too -- see
+// "Multi-category files" above.) Categories left out this run are simply
+// untouched and can be picked up in a later run.
+//
 // Usage (from site/):
 //   npm run generate-metadata
+//   npm run generate-metadata -- --category black-white
+//   npm run generate-metadata -- --category black-white --category color
 //   npm run generate-metadata -- ../media-import   (custom source folder)
 
 import { config } from "dotenv";
@@ -63,7 +72,27 @@ const model = genAI.getGenerativeModel({
   generationConfig: { responseMimeType: "application/json" },
 });
 
-const importDir = process.argv[2] || "../media-import";
+const categoryFilter = [];
+const positionalArgs = [];
+const rawArgs = process.argv.slice(2);
+for (let i = 0; i < rawArgs.length; i++) {
+  const arg = rawArgs[i];
+  if (arg === "--category") {
+    categoryFilter.push(rawArgs[++i]);
+  } else if (arg.startsWith("--category=")) {
+    categoryFilter.push(arg.slice("--category=".length));
+  } else {
+    positionalArgs.push(arg);
+  }
+}
+const unknownCategories = categoryFilter.filter((c) => !CATEGORIES.includes(c));
+if (unknownCategories.length) {
+  console.error(`Unknown --category value(s): ${unknownCategories.join(", ")}`);
+  console.error(`Valid categories: ${CATEGORIES.join(", ")}`);
+  process.exit(1);
+}
+
+const importDir = positionalArgs[0] || "../media-import";
 const rootDir = join(process.cwd(), importDir);
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -191,6 +220,7 @@ const hashGroups = Array.from(filesByHash.entries());
 const results = [];
 const failures = [];
 let analyzed = 0;
+let skippedByFilter = 0;
 
 for (let idx = 0; idx < hashGroups.length; idx++) {
   const [hash, group] = hashGroups[idx];
@@ -203,6 +233,12 @@ for (let idx = 0; idx < hashGroups.length; idx++) {
   const firstOccurrence = group.occurrences[0];
 
   let record = existingByHash.get(hash);
+  if (!record && categoryFilter.length && !categories.some((c) => categoryFilter.includes(c))) {
+    // Not cached and not in a requested category this run -- leave
+    // completely untouched (no API call, no rename) for a later run.
+    skippedByFilter++;
+    continue;
+  }
   if (!record) {
     console.log(
       `[${idx + 1}/${hashGroups.length}] Analyzing ${firstOccurrence.filename} (${group.mediaType})...`
@@ -248,7 +284,8 @@ writeFileSync(
 );
 
 console.log(
-  `\nDone. ${analyzed} new file(s) analyzed, ${results.length - analyzed} already cached, ${failures.length} failed.`
+  `\nDone. ${analyzed} new file(s) analyzed, ${results.length - analyzed} already cached, ` +
+    `${failures.length} failed, ${skippedByFilter} skipped (outside --category filter).`
 );
 console.log(`Metadata written to ${metadataPath}`);
 if (failures.length) {
