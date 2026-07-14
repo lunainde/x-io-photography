@@ -76,6 +76,18 @@ export const mediaItem = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: "caption",
+      title: "Caption",
+      type: "string",
+      description: "Short creative title for the piece.",
+    }),
+    defineField({
+      name: "author",
+      title: "Author",
+      type: "string",
+      initialValue: "X-iO",
+    }),
+    defineField({
       name: "order",
       title: "Order",
       type: "number",

@@ -10,6 +10,10 @@
 // folders right now gets deleted. Re-run any time your local selection
 // changes (added, removed, or edited photos) to bring Sanity back in sync.
 //
+// If media-import/media-metadata.ndjson exists (see `npm run
+// generate-metadata`), alt/caption/author are read from it instead of being
+// auto-derived from the filename.
+//
 // Usage (from site/):
 //   npm run import-media
 //   npm run import-media -- ../media-import   (custom source folder)
@@ -18,22 +22,9 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 
 import { createClient } from "@sanity/client";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, extname, join } from "node:path";
-
-// Keep in sync with src/lib/categories.ts.
-const CATEGORIES = [
-  "home",
-  "architecture",
-  "black-white",
-  "color",
-  "food",
-  "places",
-  "berlin",
-];
-
-const IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
-const VIDEO_EXTENSIONS = new Set([".mov", ".mp4", ".webm", ".m4v"]);
+import { CATEGORIES, classifyMediaType, humanize, slugify } from "./media-shared.mjs";
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
@@ -57,17 +48,18 @@ const client = createClient({
 const importDir = process.argv[2] || "../media-import";
 const rootDir = join(process.cwd(), importDir);
 
-function humanize(filename) {
-  return basename(filename, extname(filename))
-    .replace(/[-_]+/g, " ")
-    .trim();
-}
-
-function slugify(str) {
-  return str
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+// Optional AI-generated metadata (alt/caption/author), keyed by filename.
+// See generate-metadata.mjs -- it writes this file next to the category
+// folders after renaming files to include their alt text.
+const metadataPath = join(rootDir, "media-metadata.ndjson");
+const metadataByFilename = new Map();
+if (existsSync(metadataPath)) {
+  const lines = readFileSync(metadataPath, "utf8").split("\n").filter(Boolean);
+  for (const line of lines) {
+    const record = JSON.parse(line);
+    metadataByFilename.set(record.filename, record);
+  }
+  console.log(`Loaded AI metadata for ${metadataByFilename.size} file(s) from media-metadata.ndjson\n`);
 }
 
 const byFilename = new Map(); // filename -> { path, mediaType, categories: Set }
@@ -82,11 +74,7 @@ for (const category of CATEGORIES) {
   }
   for (const entry of entries) {
     const ext = extname(entry).toLowerCase();
-    const mediaType = IMAGE_EXTENSIONS.has(ext)
-      ? "image"
-      : VIDEO_EXTENSIONS.has(ext)
-        ? "video"
-        : null;
+    const mediaType = classifyMediaType(ext);
     if (!mediaType) continue;
     const fullPath = join(dir, entry);
     if (!statSync(fullPath).isFile()) continue;
@@ -116,6 +104,7 @@ console.log(`Importing ${byFilename.size} media item(s) from ${rootDir}\n`);
 let i = 0;
 for (const [filename, info] of byFilename) {
   i++;
+  const meta = metadataByFilename.get(filename);
   const docId = `mediaItem-${slugify(basename(filename, extname(filename)))}`;
   const categories = Array.from(info.categories);
   const title = humanize(filename);
@@ -136,7 +125,9 @@ for (const [filename, info] of byFilename) {
     title,
     mediaType: info.mediaType,
     categories,
-    alt: title,
+    alt: meta?.alt || title,
+    ...(meta?.caption ? { caption: meta.caption } : {}),
+    ...(meta?.author ? { author: meta.author } : {}),
     order: i,
     ...(info.mediaType === "video"
       ? { video: { _type: "file", asset: { _type: "reference", _ref: asset._id } } }

@@ -34,6 +34,8 @@ Sanity project). No separate tool or login needed.
    - **Media type** — image or video
    - **Image**/**Video file** — upload it
    - **Alt text** — required, describes the photo for accessibility/SEO
+   - **Caption** — optional short creative title
+   - **Author** — optional, defaults to "X-iO"
    - **Order** — optional number; lower shows first within a category
    - Click **Publish** (top right) — drafts don't show on the live site.
 4. To edit or delete: click any existing item in the list, change fields (or
@@ -76,6 +78,44 @@ them one by one:
 
 `media-import/` is git-ignored — it's just a local staging folder, Sanity is
 the actual storage.
+
+### Auto-generating alt text, captions, and author (AI)
+
+Optional step, run **before** `npm run import-media`: instead of writing alt
+text by hand for every file, have Gemini look at each photo/video and
+generate it.
+
+1. Get a free Gemini API key at [aistudio.google.com](https://aistudio.google.com/apikey)
+   and add it to `site/.env.local`:
+   ```
+   GEMINI_API_KEY=...
+   ```
+2. From `site/`, run:
+   ```bash
+   npm run generate-metadata
+   ```
+   For every file under `media-import/`, this asks Gemini for alt text, a
+   caption, and an author, then renames the file to
+   `<category>-<alt-text>-by-<author>.<ext>` (URL-friendly) and writes
+   `media-import/media-metadata.ndjson`.
+3. Run `npm run import-media` as usual — it reads that file automatically and
+   fills in the `alt`, `caption`, and `author` fields instead of
+   auto-deriving them from the filename.
+
+Notes:
+- **Rate limit**: paced at one request per 6 seconds to stay under the
+  Gemini free tier's 10 requests/minute. For a few hundred files, expect it
+  to take a while — that's expected.
+- **Resumable**: files are matched by content hash, so if the script is
+  interrupted or you add a few more files later, re-running it only
+  processes what's new — already-processed files are skipped, not
+  re-billed against your quota.
+- **Multi-category files**: the same photo copied into several category
+  folders is recognized as one file (by content, not filename) and only
+  sent to Gemini once; every copy is renamed to the same final filename so
+  `import-media`'s multi-category tagging keeps working.
+- If a file fails (bad response, network error, etc.), it's left untouched
+  and reported at the end — just re-run the script to retry it.
 
 ## Project structure
 

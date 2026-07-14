@@ -5,6 +5,8 @@ export interface MediaItem {
   _id: string;
   mediaType: "image" | "video";
   alt: string;
+  caption: string | null;
+  author: string | null;
   order: number;
   imageUrl: string | null;
   width: number | null;
@@ -17,6 +19,8 @@ const MEDIA_ITEM_PROJECTION = /* groq */ `{
   _id,
   mediaType,
   alt,
+  caption,
+  author,
   order,
   "imageUrl": image.asset->url,
   "width": image.asset->metadata.dimensions.width,
@@ -48,6 +52,8 @@ export async function getAllMediaGroupedByCategory(): Promise<
       _id,
       mediaType,
       alt,
+      caption,
+      author,
       order,
       categories,
       "imageUrl": image.asset->url,

@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "generate-metadata": "node scripts/generate-metadata.mjs",
     "import-media": "node scripts/import-media.mjs",
     "delete-media": "node scripts/delete-media.mjs"
   },
@@ -22,6 +23,7 @@
     "sanity": "^6.3.0"
   },
   "devDependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@sanity/client": "^7.23.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
