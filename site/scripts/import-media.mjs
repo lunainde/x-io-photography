@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // Full-replace bulk importer: WIPES every existing mediaItem document in
-// Sanity, then re-creates one per photo found under media-import/<category>/*,
-// tagged with every category folder it appears in (same filename in multiple
-// folders -> one multi-category document, not multiple documents).
+// Sanity, then re-creates one per photo/video found under
+// media-import/<category>/*, tagged with every category folder it appears in
+// (same filename in multiple folders -> one multi-category document, not
+// multiple documents).
 //
 // This is destructive by design: media-import/ is treated as the single
 // source of truth. Anything currently in Sanity that isn't in your local
@@ -32,6 +33,7 @@ const CATEGORIES = [
 ];
 
 const IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
+const VIDEO_EXTENSIONS = new Set([".mov", ".mp4", ".webm", ".m4v"]);
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
@@ -68,7 +70,7 @@ function slugify(str) {
     .replace(/^-+|-+$/g, "");
 }
 
-const byFilename = new Map(); // filename -> { path, categories: Set }
+const byFilename = new Map(); // filename -> { path, mediaType, categories: Set }
 
 for (const category of CATEGORIES) {
   const dir = join(rootDir, category);
@@ -80,19 +82,24 @@ for (const category of CATEGORIES) {
   }
   for (const entry of entries) {
     const ext = extname(entry).toLowerCase();
-    if (!IMAGE_EXTENSIONS.has(ext)) continue;
+    const mediaType = IMAGE_EXTENSIONS.has(ext)
+      ? "image"
+      : VIDEO_EXTENSIONS.has(ext)
+        ? "video"
+        : null;
+    if (!mediaType) continue;
     const fullPath = join(dir, entry);
     if (!statSync(fullPath).isFile()) continue;
 
     if (!byFilename.has(entry)) {
-      byFilename.set(entry, { path: fullPath, categories: new Set() });
+      byFilename.set(entry, { path: fullPath, mediaType, categories: new Set() });
     }
     byFilename.get(entry).categories.add(category);
   }
 }
 
 if (byFilename.size === 0) {
-  console.log(`No images found under ${rootDir}. Expected subfolders: ${CATEGORIES.join(", ")}`);
+  console.log(`No media found under ${rootDir}. Expected subfolders: ${CATEGORIES.join(", ")}`);
   process.exit(0);
 }
 
@@ -104,7 +111,7 @@ if (existingIds.length > 0) {
   await tx.commit();
 }
 
-console.log(`Importing ${byFilename.size} image(s) from ${rootDir}\n`);
+console.log(`Importing ${byFilename.size} media item(s) from ${rootDir}\n`);
 
 let i = 0;
 for (const [filename, info] of byFilename) {
@@ -113,22 +120,27 @@ for (const [filename, info] of byFilename) {
   const categories = Array.from(info.categories);
   const title = humanize(filename);
 
-  console.log(`[${i}/${byFilename.size}] ${filename} -> ${categories.join(", ")}`);
+  console.log(
+    `[${i}/${byFilename.size}] (${info.mediaType}) ${filename} -> ${categories.join(", ")}`
+  );
 
-  const asset = await client.assets.upload("image", readFileSync(info.path), { filename });
+  const asset = await client.assets.upload(
+    info.mediaType === "video" ? "file" : "image",
+    readFileSync(info.path),
+    { filename }
+  );
 
   await client.create({
     _id: docId,
     _type: "mediaItem",
     title,
-    mediaType: "image",
+    mediaType: info.mediaType,
     categories,
     alt: title,
     order: i,
-    image: {
-      _type: "image",
-      asset: { _type: "reference", _ref: asset._id },
-    },
+    ...(info.mediaType === "video"
+      ? { video: { _type: "file", asset: { _type: "reference", _ref: asset._id } } }
+      : { image: { _type: "image", asset: { _type: "reference", _ref: asset._id } } }),
   });
 }
 

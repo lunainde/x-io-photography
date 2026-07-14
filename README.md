@@ -58,10 +58,11 @@ them one by one:
      places/
      berlin/
    ```
-2. Drop photos into the matching folder(s). **If a photo belongs to more than
-   one category, copy the same file into each relevant folder** — the script
-   detects it's the same photo and tags it with all of them instead of
-   creating duplicates.
+2. Drop files into the matching folder(s) — photos (`.jpg`, `.jpeg`, `.png`,
+   `.webp`, `.gif`) and videos (`.mov`, `.mp4`, `.webm`, `.m4v`) can be mixed
+   freely. **If a file belongs to more than one category, copy the same file
+   into each relevant folder** — the script detects it's the same file and
+   tags it with all of them instead of creating duplicates.
 3. In `site/.env.local`, add a write-access token (Sanity project → API →
    Tokens → Add token → **Editor** permission):
    ```
