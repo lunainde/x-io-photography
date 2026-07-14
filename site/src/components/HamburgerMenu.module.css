@@ -14,6 +14,15 @@
   justify-content: center;
 }
 
+/* Mobile/tablet: icon at its natural 64px size (was scaled 200% for all
+   breakpoints before -- too large on small screens). Desktop restores the
+   200%-equivalent scale-up below. */
+.menuIcon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
 .closeLine {
   position: absolute;
   width: 26px;
@@ -128,6 +137,11 @@
     width: 72px;
     height: 72px;
     padding: 12px;
+  }
+
+  .menuIcon {
+    width: 128px;
+    height: 128px;
   }
 }
 

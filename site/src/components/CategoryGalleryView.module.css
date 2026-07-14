@@ -7,7 +7,7 @@
 
 .content {
   flex: 1;
-  padding: 80px;
+  padding: 80px 24px;
   position: relative;
 }
 
@@ -19,8 +19,19 @@
   color: var(--color-fg);
   position: fixed;
   top: 80px;
-  left: 80px;
+  left: 24px;
   z-index: 10;
   margin-bottom: 0;
   pointer-events: none;
+}
+
+/* Tablet/desktop: original 80px side margins */
+@media (min-width: 640px) {
+  .content {
+    padding: 80px;
+  }
+
+  .label {
+    left: 80px;
+  }
 }

@@ -74,7 +74,7 @@ export default function HamburgerMenu({
             alt="Menu"
             width={64}
             height={64}
-            style={{ width: "200%", height: "200%", objectFit: "contain" }}
+            className={styles.menuIcon}
             priority
           />
         )}
