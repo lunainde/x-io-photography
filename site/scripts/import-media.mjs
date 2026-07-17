@@ -53,7 +53,7 @@ const CATEGORIES = [
 ];
 
 const IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
-const VIDEO_EXTENSIONS = new Set([".mov", ".mp4", ".m4v"]);
+const VIDEO_EXTENSIONS = new Set([".mov", ".mp4", ".webm", ".m4v"]);
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
