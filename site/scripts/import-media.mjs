@@ -39,7 +39,11 @@ import { createClient } from "@sanity/client";
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, extname, join } from "node:path";
-import { generateAltAndCaption, sleep, GEMINI_DELAY_MS } from "./gemini-metadata.mjs";
+import {
+  generateAltAndCaption,
+  sleep,
+  GEMINI_DELAY_MS,
+} from "./gemini-metadata.mjs";
 
 // Keep in sync with src/lib/categories.ts.
 const CATEGORIES = [
@@ -61,7 +65,7 @@ const token = process.env.SANITY_API_TOKEN;
 
 if (!projectId || !dataset || !token) {
   console.error(
-    "Missing NEXT_PUBLIC_SANITY_PROJECT_ID, NEXT_PUBLIC_SANITY_DATASET, or SANITY_API_TOKEN in site/.env.local"
+    "Missing NEXT_PUBLIC_SANITY_PROJECT_ID, NEXT_PUBLIC_SANITY_DATASET, or SANITY_API_TOKEN in site/.env.local",
   );
   process.exit(1);
 }
@@ -134,14 +138,14 @@ if (replaceCategories.length) {
   for (const category of replaceCategories) {
     const ids = await client.fetch(
       `*[_type == "mediaItem" && $category in categories]._id`,
-      { category }
+      { category },
     );
     if (ids.length === 0) {
       console.log(`No existing documents tagged "${category}" to delete.`);
       continue;
     }
     console.log(
-      `Deleting ${ids.length} existing document(s) tagged "${category}"...`
+      `Deleting ${ids.length} existing document(s) tagged "${category}"...`,
     );
     const tx = client.transaction();
     for (const id of ids) tx.delete(id);
@@ -191,7 +195,7 @@ for (const category of categoriesToScan) {
 
 if (byHash.size === 0) {
   console.log(
-    `No images/videos found under ${rootDir} for ${categoriesToScan.join(", ")}.`
+    `No images/videos found under ${rootDir} for ${categoriesToScan.join(", ")}.`,
   );
   process.exit(0);
 }
@@ -208,12 +212,14 @@ for (const [hash, info] of byHash) {
     ? `${humanize(primaryCategory)} ${info.number}`
     : humanize(info.filename);
 
-  console.log(`[${i}/${byHash.size}] ${info.filename} -> ${categories.join(", ")}`);
+  console.log(
+    `[${i}/${byHash.size}] ${info.filename} -> ${categories.join(", ")}`,
+  );
 
   const asset = await client.assets.upload(
     info.isVideo ? "file" : "image",
     readFileSync(info.path),
-    { filename: info.filename }
+    { filename: info.filename },
   );
 
   let alt = title;
@@ -224,7 +230,9 @@ for (const [hash, info] of byHash) {
       alt = generated.alt;
       caption = generated.caption;
     } catch (err) {
-      console.warn(`  Gemini metadata failed, falling back to title: ${err.message}`);
+      console.warn(
+        `  Gemini metadata failed, falling back to title: ${err.message}`,
+      );
     } finally {
       await sleep(GEMINI_DELAY_MS);
     }
@@ -241,9 +249,21 @@ for (const [hash, info] of byHash) {
     author: info.author || "X-iO",
     order: i,
     ...(info.isVideo
-      ? { video: { _type: "file", asset: { _type: "reference", _ref: asset._id } } }
-      : { image: { _type: "image", asset: { _type: "reference", _ref: asset._id } } }),
+      ? {
+          video: {
+            _type: "file",
+            asset: { _type: "reference", _ref: asset._id },
+          },
+        }
+      : {
+          image: {
+            _type: "image",
+            asset: { _type: "reference", _ref: asset._id },
+          },
+        }),
   });
 }
 
-console.log("\nDone. Check the Studio (/studio) to review titles, alt text, captions, and ordering.");
+console.log(
+  "\nDone. Check the Studio (/studio) to review titles, alt text, captions, and ordering.",
+);
