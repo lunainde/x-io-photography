@@ -7,15 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "generate-metadata": "node scripts/generate-metadata.mjs",
     "import-media": "node scripts/import-media.mjs",
-    "delete-media": "node scripts/delete-media.mjs"
+    "backfill-metadata": "node scripts/backfill-metadata.mjs"
   },
   "dependencies": {
     "@sanity/image-url": "^2.1.1",
     "@sanity/vision": "^6.3.0",
     "framer-motion": "^12.42.2",
-    "gsap": "^3.15.0",
     "next": "16.2.10",
     "next-sanity": "^13.1.1",
     "react": "19.2.4",
@@ -23,7 +21,6 @@
     "sanity": "^6.3.0"
   },
   "devDependencies": {
-    "@google/generative-ai": "^0.24.1",
     "@sanity/client": "^7.23.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",

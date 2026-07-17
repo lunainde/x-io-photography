@@ -85,7 +85,7 @@ export const mediaItem = defineType({
       name: "author",
       title: "Author",
       type: "string",
-      initialValue: "X-iO",
+      description: "Photographer / credit for this piece.",
     }),
     defineField({
       name: "order",
