@@ -9,6 +9,7 @@
     "lint": "eslint",
     "import-media": "node scripts/import-media.mjs",
     "backfill-metadata": "node scripts/backfill-metadata.mjs",
+    "backfill-video-posters": "node scripts/backfill-video-posters.mjs",
     "delete-media": "node scripts/delete-media.mjs"
   },
   "dependencies": {

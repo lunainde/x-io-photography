@@ -44,6 +44,7 @@ import {
   sleep,
   GEMINI_DELAY_MS,
 } from "./gemini-metadata.mjs";
+import { ffmpegAvailable, extractPosterFromFile } from "./video-poster.mjs";
 
 // Keep in sync with src/lib/categories.ts.
 const CATEGORIES = [
@@ -202,6 +203,15 @@ if (byHash.size === 0) {
 
 console.log(`Found ${byHash.size} unique file(s) in ${rootDir}\n`);
 
+const hasVideos = [...byHash.values()].some((info) => info.isVideo);
+const canMakePosters = hasVideos && ffmpegAvailable();
+if (hasVideos && !canMakePosters) {
+  console.warn(
+    "ffmpeg not found -- videos will be uploaded without an auto-generated " +
+      "poster (install it, e.g. `brew install ffmpeg`, to enable this).\n",
+  );
+}
+
 let i = 0;
 for (const [hash, info] of byHash) {
   i++;
@@ -238,6 +248,18 @@ for (const [hash, info] of byHash) {
     }
   }
 
+  let posterAsset;
+  if (info.isVideo && canMakePosters) {
+    try {
+      const posterBuffer = await extractPosterFromFile(info.path);
+      posterAsset = await client.assets.upload("image", posterBuffer, {
+        filename: `${info.filename}-poster.jpg`,
+      });
+    } catch (err) {
+      console.warn(`  Poster extraction failed: ${err.message}`);
+    }
+  }
+
   await client.createOrReplace({
     _id: docId,
     _type: "mediaItem",
@@ -261,6 +283,14 @@ for (const [hash, info] of byHash) {
             asset: { _type: "reference", _ref: asset._id },
           },
         }),
+    ...(posterAsset
+      ? {
+          videoPoster: {
+            _type: "image",
+            asset: { _type: "reference", _ref: posterAsset._id },
+          },
+        }
+      : {}),
   });
 }
 
