@@ -13,6 +13,8 @@ export interface MediaItem {
   height: number | null;
   videoUrl: string | null;
   videoPosterUrl: string | null;
+  posterWidth: number | null;
+  posterHeight: number | null;
 }
 
 const MEDIA_ITEM_PROJECTION = /* groq */ `{
@@ -26,7 +28,9 @@ const MEDIA_ITEM_PROJECTION = /* groq */ `{
   "width": image.asset->metadata.dimensions.width,
   "height": image.asset->metadata.dimensions.height,
   "videoUrl": video.asset->url,
-  "videoPosterUrl": videoPoster.asset->url
+  "videoPosterUrl": videoPoster.asset->url,
+  "posterWidth": videoPoster.asset->metadata.dimensions.width,
+  "posterHeight": videoPoster.asset->metadata.dimensions.height
 }`;
 
 export async function getMediaByCategory(
@@ -60,7 +64,9 @@ export async function getAllMediaGroupedByCategory(): Promise<
       "width": image.asset->metadata.dimensions.width,
       "height": image.asset->metadata.dimensions.height,
       "videoUrl": video.asset->url,
-      "videoPosterUrl": videoPoster.asset->url
+      "videoPosterUrl": videoPoster.asset->url,
+      "posterWidth": videoPoster.asset->metadata.dimensions.width,
+      "posterHeight": videoPoster.asset->metadata.dimensions.height
     }`,
     {},
     { next: { revalidate: 60 } }

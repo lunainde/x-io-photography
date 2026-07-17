@@ -36,13 +36,29 @@ interface Slot {
   ratio: number;
   item: MediaItem | null;
   placeholderIndex: number;
+  displayUrl?: string;
+  displayWidth?: number;
+  displayHeight?: number;
 }
 
+// Videos have no imageUrl (only the video/videoPoster fields) -- fall back
+// to the poster frame as the tile's still image. Videos with no poster set
+// in Studio still render as a placeholder, same as before.
 function pickSlot(globalIndex: number, items: MediaItem[]): Slot {
   if (items.length) {
     const item = items[globalIndex % items.length];
-    if (item.imageUrl && item.width && item.height) {
-      return { ratio: item.width / item.height, item, placeholderIndex: -1 };
+    const displayUrl = item.imageUrl ?? item.videoPosterUrl ?? undefined;
+    const displayWidth = item.imageUrl ? item.width : item.posterWidth;
+    const displayHeight = item.imageUrl ? item.height : item.posterHeight;
+    if (displayUrl && displayWidth && displayHeight) {
+      return {
+        ratio: displayWidth / displayHeight,
+        item,
+        placeholderIndex: -1,
+        displayUrl,
+        displayWidth,
+        displayHeight,
+      };
     }
   }
   const [w, h] = PLACEHOLDER_RATIOS[globalIndex % PLACEHOLDER_RATIOS.length];
@@ -176,14 +192,14 @@ export default function HeroBackground({ items }: { items: MediaItem[] }) {
                           style={{ marginTop: slotIndex === 0 ? offset : 0 }}
                           data-cursor-grow
                         >
-                          {slot.item?.imageUrl &&
-                          slot.item.width &&
-                          slot.item.height ? (
+                          {slot.displayUrl &&
+                          slot.displayWidth &&
+                          slot.displayHeight ? (
                             <Image
-                              src={slot.item.imageUrl}
-                              alt={slot.item.alt}
-                              width={slot.item.width}
-                              height={slot.item.height}
+                              src={slot.displayUrl}
+                              alt={slot.item?.alt ?? ""}
+                              width={slot.displayWidth}
+                              height={slot.displayHeight}
                               sizes="25vw"
                               className={styles.tileImage}
                             />
