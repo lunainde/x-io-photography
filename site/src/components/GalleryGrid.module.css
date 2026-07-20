@@ -20,6 +20,7 @@
 }
 
 .tile {
+  position: relative;
   width: 100%;
   break-inside: avoid;
   margin-bottom: 80px;
@@ -31,4 +32,22 @@
   width: 100%;
   height: auto;
   display: block;
+}
+
+.caption {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 6px;
+  font-family: var(--font-source-code-pro), monospace;
+  font-size: 10px;
+  color: grey;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.tile:hover .caption {
+  opacity: 1;
 }

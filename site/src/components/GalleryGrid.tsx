@@ -71,6 +71,7 @@ export default function GalleryGrid({
                 className={styles.media}
               />
             ) : null}
+            {item.caption && <span className={styles.caption}>{item.caption}</span>}
           </div>
         );
       })}
