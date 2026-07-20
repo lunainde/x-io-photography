@@ -8,8 +8,8 @@
 // own image pipeline before sending it to Gemini -- smaller image, fewer
 // input tokens, no local file needed either way.
 
-const GEMINI_MODEL = "gemini-2.0-flash";
-export const GEMINI_DELAY_MS = 6000;
+const GEMINI_MODEL = "gemini-3.5-flash";
+export const GEMINI_DELAY_MS = 13000;
 
 const GEMINI_PROMPT =
   "You are labeling a photo for a photography portfolio website. " +
