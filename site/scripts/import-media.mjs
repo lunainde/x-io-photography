@@ -38,13 +38,15 @@ config({ path: ".env.local" });
 import { createClient } from "@sanity/client";
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { basename, extname, join } from "node:path";
+import { extname, join } from "node:path";
 import {
   generateAltAndCaption,
   sleep,
   GEMINI_DELAY_MS,
 } from "./gemini-metadata.mjs";
 import { ffmpegAvailable, extractPosterFromFile } from "./video-poster.mjs";
+import { locationForFile, NOMINATIM_DELAY_MS } from "./geocode.mjs";
+import { humanize, parseFilename } from "./filename.mjs";
 
 // Keep in sync with src/lib/categories.ts.
 const CATEGORIES = [
@@ -111,26 +113,8 @@ if (!onlyCategories && replaceCategories.length) {
 const categoriesToScan = onlyCategories || CATEGORIES;
 const rootDir = join(process.cwd(), importDirArg);
 
-function humanize(text) {
-  return text.replace(/[-_]+/g, " ").trim();
-}
-
 function hashFile(path) {
   return createHash("sha256").update(readFileSync(path)).digest("hex");
-}
-
-// "black-white_by_X-iO_1000" -> { author: "X-iO", number: "1000" }
-function parseFilename(filename) {
-  const base = basename(filename, extname(filename));
-  const byIdx = base.indexOf("_by_");
-  if (byIdx === -1) return null;
-  const rest = base.slice(byIdx + "_by_".length);
-  const lastUnderscore = rest.lastIndexOf("_");
-  if (lastUnderscore === -1) return null;
-  const author = rest.slice(0, lastUnderscore);
-  const number = rest.slice(lastUnderscore + 1);
-  if (!author || !number) return null;
-  return { author, number };
 }
 
 // --- Replace: delete existing docs tagged with the given categories -----
@@ -234,18 +218,29 @@ for (const [hash, info] of byHash) {
 
   let alt = title;
   let caption;
+  let location;
   if (!info.isVideo) {
-    try {
-      const generated = await generateAltAndCaption(asset.url);
-      alt = generated.alt;
-      caption = generated.caption;
-    } catch (err) {
+    const [geminiResult, locationResult] = await Promise.allSettled([
+      generateAltAndCaption(asset.url),
+      locationForFile(info.path),
+    ]);
+    if (geminiResult.status === "fulfilled") {
+      alt = geminiResult.value.alt;
+      caption = geminiResult.value.caption;
+    } else {
       console.warn(
-        `  Gemini metadata failed, falling back to title: ${err.message}`,
+        `  Gemini metadata failed, falling back to title: ${geminiResult.reason.message}`,
       );
-    } finally {
-      await sleep(GEMINI_DELAY_MS);
     }
+    if (locationResult.status === "fulfilled" && locationResult.value) {
+      location = locationResult.value;
+    } else if (locationResult.status === "rejected") {
+      console.warn(`  Geocoding failed: ${locationResult.reason.message}`);
+    }
+    // Gemini's delay (13s) dwarfs Nominatim's (1.1s) -- waiting both in
+    // parallel keeps each service's own pacing requirement satisfied
+    // without adding any extra wall-clock time per file.
+    await Promise.all([sleep(GEMINI_DELAY_MS), sleep(NOMINATIM_DELAY_MS)]);
   }
 
   let posterAsset;
@@ -268,6 +263,7 @@ for (const [hash, info] of byHash) {
     categories,
     alt,
     ...(caption ? { caption } : {}),
+    ...(location ? { location } : {}),
     author: info.author || "X-iO",
     order: i,
     ...(info.isVideo

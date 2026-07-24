@@ -34,20 +34,27 @@
   display: block;
 }
 
-.caption {
+.meta {
   position: absolute;
   top: 100%;
   left: 0;
   margin-top: 6px;
-  font-family: var(--font-source-code-pro), monospace;
-  font-size: 10px;
-  color: grey;
-  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
 }
 
-.tile:hover .caption {
+.tile:hover .meta {
   opacity: 1;
+}
+
+.caption,
+.location {
+  font-family: var(--font-source-code-pro), monospace;
+  font-size: 10px;
+  color: grey;
+  white-space: nowrap;
 }

@@ -40,7 +40,14 @@ export const mediaItem = defineType({
       name: "image",
       title: "Image",
       type: "image",
-      options: { hotspot: true },
+      options: {
+        hotspot: true,
+        // location/exif opted in (off by default for privacy) so GPS is
+        // captured automatically on every upload, CLI import or a direct
+        // Studio drag-and-drop -- the "Generate metadata" action reads
+        // this instead of needing a local file to read EXIF from.
+        metadata: ["location", "lqip", "palette", "blurhash"],
+      },
       hidden: ({ parent }) => parent?.mediaType !== "image",
       validation: (rule) =>
         rule.custom((value, context) => {
@@ -86,6 +93,13 @@ export const mediaItem = defineType({
       title: "Author",
       type: "string",
       description: "Photographer / credit for this piece.",
+    }),
+    defineField({
+      name: "location",
+      title: "Location",
+      type: "string",
+      description:
+        "City where this was taken. Auto-filled from GPS EXIF data when available -- edit manually here for photos without it.",
     }),
     defineField({
       name: "order",

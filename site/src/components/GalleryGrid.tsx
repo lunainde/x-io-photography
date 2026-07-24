@@ -71,7 +71,12 @@ export default function GalleryGrid({
                 className={styles.media}
               />
             ) : null}
-            {item.caption && <span className={styles.caption}>{item.caption}</span>}
+            {(item.caption || item.location) && (
+              <div className={styles.meta}>
+                {item.caption && <span className={styles.caption}>{item.caption}</span>}
+                {item.location && <span className={styles.location}>{item.location}</span>}
+              </div>
+            )}
           </div>
         );
       })}
